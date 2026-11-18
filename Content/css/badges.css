@@ -1,0 +1,29 @@
+/* Status badges - §F.4. Rendered only by Controls/StatusBadge.ascx, so these pairings
+   exist in exactly one place. No screen writes badge markup by hand.
+
+   Colour is never the only signal: every badge carries its own text (§F.6). */
+
+.badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge--pending   { background: var(--orange-100); color: var(--badge-pending-text); }
+.badge--confirmed { background: var(--green-100);  color: var(--badge-success-text); }
+.badge--completed { background: var(--green-100);  color: var(--badge-success-text); }
+.badge--declined  { background: var(--red-100);    color: var(--badge-danger-text); }
+.badge--scheduled { background: var(--blue-100);   color: var(--badge-info-text); }
+.badge--cancelled { background: var(--badge-neutral-fill); color: var(--badge-neutral-text); }
+
+/* Fallback for a status the mapping does not know - visible rather than invisible,
+   so an unmapped value shows up in review instead of rendering as bare text. */
+.badge--unknown {
+    background: var(--badge-neutral-fill);
+    color: var(--badge-neutral-text);
+    border: 1px dashed var(--text-muted);
+}

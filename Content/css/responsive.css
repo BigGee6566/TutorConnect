@@ -1,0 +1,126 @@
+﻿/* Breakpoints - section F.5: 1440 design target, 1024, 768, 375.
+   Load this last: several rules here deliberately override the defaults above. */
+
+/* The top bar itself is always visible because it carries the notification bell.
+   The hamburger inside it is meaningless while the sidebar is fixed and on screen. */
+@media (min-width: 1024px) {
+    .hamburger { display: none; }
+}
+
+/* ============================================================ 1024 and below
+   The sidebar becomes a slide-in drawer opened by the header hamburger and closed
+   by the x inside the drawer. Cards drop to two per row. */
+@media (max-width: 1023px) {
+
+    .app-main { margin-left: 0; }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform .2s ease;
+        box-shadow: 0 0 24px rgba(14, 34, 60, .3);
+    }
+
+    .sidebar__close { display: flex; }
+
+    /* Driven by a class on <body>, toggled in sidebar.js. */
+    body.sidebar-open .sidebar { transform: translateX(0); }
+    body.sidebar-open .sidebar-backdrop { display: block; }
+
+    .card-grid,
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .app-content { padding: 24px 20px; }
+}
+
+/* A user who prefers reduced motion gets the drawer without the slide. */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar { transition: none; }
+}
+
+/* ============================================================ 767 and below
+   One card per row, forms stack, tables become cards. */
+@media (max-width: 767px) {
+
+    .card-grid,
+    .stat-grid { grid-template-columns: 1fr; }
+
+    .form-grid { grid-template-columns: 1fr; }
+
+    .filter-bar { flex-direction: column; align-items: stretch; }
+
+    .page-header .page-title { font-size: 24px; line-height: 30px; }
+
+    /* Tap targets stay at least 44x44 (section F.5). */
+    .btn { height: 44px; }
+
+    .form-row input,
+    .form-row select { height: 44px; }
+
+    /* ---- Stacked tables ----
+       A seven-column table is unusable at 375px, so each row becomes a card and each
+       cell carries its own label from the data-label attribute. The <caption> and
+       header cells stay in the DOM for screen readers; only the visual header is
+       removed. */
+    .data-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .data-table,
+    .data-table tbody,
+    .data-table tr,
+    .data-table td { display: block; width: 100%; }
+
+    .data-table tr {
+        margin-bottom: 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        overflow: hidden;
+    }
+
+    .data-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        text-align: right;
+    }
+
+    .data-table td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: var(--text-muted);
+        text-align: left;
+    }
+
+    .data-table td:last-child { border-bottom: 0; }
+
+    .data-table td.col-action { justify-content: flex-end; }
+
+    .pager { justify-content: center; }
+}
+
+/* ============================================================ 375 and below */
+@media (max-width: 420px) {
+
+    .app-content { padding: 16px 12px; }
+
+    .dash-card { padding: 22px 18px; }
+
+    /* Buttons in an action cell go full width rather than crowding onto one line. */
+    .data-table td.col-action { flex-wrap: wrap; gap: 8px; }
+    .data-table td.col-action .btn { flex: 1 1 auto; }
+    .data-table .col-action .btn + .btn { margin-left: 0; }
+}
+

@@ -1,0 +1,107 @@
+/* Print styles.
+
+   A student or tutor printing a booking wants the session details on paper - not the
+   navigation rail, not buttons they cannot press, and not a dark background that empties
+   a toner cartridge. Everything that exists only for interaction is removed. */
+
+@media print {
+
+    /* Ink and paper, not screen colours. */
+    body.app-page,
+    body.auth-page {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    /* Chrome that has no meaning on paper. */
+    .sidebar,
+    .sidebar-backdrop,
+    .app-topbar,
+    .skip-link,
+    .btn,
+    .pager,
+    .filter-bar,
+    .filter-more,
+    .panel__footer,
+    .form-actions,
+    .empty-state .btn {
+        display: none !important;
+    }
+
+    /* The content column carries the whole page once the rail is gone. */
+    .app-main { margin-left: 0 !important; }
+    .app-content { padding: 0 !important; }
+    .app-content__inner { max-width: none !important; }
+
+    /* Panels become plain sections; borders survive, shadows and radii do not. */
+    .panel,
+    .form-card {
+        border: 1px solid #999999 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .page-header { margin-bottom: 12pt; }
+    .page-title { font-size: 18pt; }
+    .page-subtitle { color: #333333 !important; }
+
+    /* Badges lose their fills but keep their words, so status is still readable. */
+    .badge {
+        background: transparent !important;
+        color: #000000 !important;
+        border: 1px solid #666666;
+        padding: 1pt 4pt;
+    }
+
+    /* Tables print as tables, never as the stacked mobile cards. */
+    .table-responsive { overflow: visible !important; }
+
+    .data-table thead {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        clip: auto !important;
+    }
+
+    .data-table,
+    .data-table tbody,
+    .data-table tr,
+    .data-table td { display: revert !important; width: auto !important; }
+
+    .data-table td::before { content: none !important; }
+
+    .data-table th,
+    .data-table td {
+        border-bottom: 1px solid #CCCCCC !important;
+        text-align: left !important;
+        padding: 4pt 6pt !important;
+    }
+
+    .data-table thead { display: table-header-group; }
+    .data-table tr { break-inside: avoid; }
+
+    /* Fact lists are the substance of a booking detail. */
+    .fact-list__row {
+        border-bottom: 1px solid #CCCCCC !important;
+        break-inside: avoid;
+    }
+
+    /* Stars have to survive without colour. */
+    .stars__on::after { content: " (filled)"; font-size: 0; }
+
+    /* A URL printed after every link is noise on a one-page booking slip. */
+    a { text-decoration: none !important; color: #000000 !important; }
+
+    /* Give the reader something the screen already told them. */
+    .app-content__inner::before {
+        content: "TutorConnect";
+        display: block;
+        margin-bottom: 6pt;
+        font-weight: 700;
+        font-size: 10pt;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+}

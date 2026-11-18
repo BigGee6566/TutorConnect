@@ -1,0 +1,57 @@
+﻿<%@ Master Language="VB" AutoEventWireup="false" CodeBehind="Student.Master.vb" Inherits="TutorConnect.MasterPages.StudentShell" %>
+<%@ Register TagPrefix="tc" TagName="NavigationSidebar" Src="~/Controls/NavigationSidebar.ascx" %>
+<%@ Register TagPrefix="tc" TagName="TopHeader" Src="~/Controls/TopHeader.ascx" %>
+
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><asp:ContentPlaceHolder ID="TitleContent" runat="server">TutorConnect</asp:ContentPlaceHolder></title>
+    <link rel="icon" href="<%: ResolveUrl("~/Images/favicon.png") %>" type="image/png" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/themes/colors.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/themes/typography.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/site.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/sidebar.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/cards.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/tables.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/badges.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/forms.css") %>" />
+    <%-- responsive.css loads last: it overrides the rules above by design. --%>
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/responsive.css") %>" />
+    <%-- Print last of all: it strips the interactive chrome the rules above add. --%>
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/print.css") %>" media="print" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body class="app-page">
+    <form id="appForm" runat="server">
+        <a class="skip-link" href="#mainContent">Skip to main content</a>
+
+        <div class="app-layout">
+            <tc:NavigationSidebar ID="sidebar" runat="server" />
+
+            <div class="app-main">
+                <tc:TopHeader ID="header" runat="server" />
+
+                <main class="app-content" id="mainContent">
+                    <div class="app-content__inner">
+
+                        <header class="page-header">
+                            <h1 class="page-title"><asp:Literal ID="litPageTitle" runat="server" Mode="Encode" /></h1>
+                            <p class="page-subtitle"><asp:Literal ID="litPageSubtitle" runat="server" Mode="Encode" /></p>
+                        </header>
+
+                        <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <script src="<%: ResolveUrl("~/Scripts/sidebar.js") %>"></script>
+        <script src="<%: ResolveUrl("~/Scripts/site.js") %>"></script>
+        <asp:ContentPlaceHolder ID="ScriptContent" runat="server" />
+    </form>
+</body>
+</html>
+

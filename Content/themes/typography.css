@@ -1,0 +1,87 @@
+/* Part F.2. Source Sans 3, with a system fallback stack so the page is readable even
+   if the webfont never arrives. Inter and Roboto are deliberately not used. */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap');
+
+:root {
+    --font-ui: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+h1, h2, h3 {
+    margin: 0;
+    color: var(--navy-900);
+    font-weight: 600;
+}
+
+.page-title {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 600;
+}
+
+.page-subtitle {
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--text-muted);
+}
+
+.card-title {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.card-description {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--text-muted);
+}
+
+/* Tabular figures keep IDs, rates and times aligned column-to-column. */
+.numeric,
+table td.numeric,
+table th.numeric {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Visible only to screen readers - used for table captions and skip links. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 10px 16px;
+    background: var(--surface);
+    color: var(--blue-600);
+    font-weight: 600;
+}
+
+.skip-link:focus {
+    left: 8px;
+    top: 8px;
+}

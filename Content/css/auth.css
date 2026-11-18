@@ -1,0 +1,443 @@
+/* Login and Register - the split-screen shell described in G.1.
+
+   D-09: the left panel is a photograph under a deep navy overlay. The mockup shows a
+   plain white panel, but the specification calls for the photograph, and that is the
+   decision on record.
+
+   The supplied logo PNG has a solid #FCFCFC background and no alpha channel, so over the
+   navy it read as a pale rectangle. It is not placed there any more: it sits on the white
+   form panel, where #FCFCFC against #FFFFFF is a 1.2% difference and does not read as a
+   box at all. The left panel carries copy instead. */
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body.auth-page {
+    margin: 0;
+    background: var(--surface);
+}
+
+.auth-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------- Left panel */
+
+.auth-brand {
+    position: relative;
+    flex: 0 0 40%;
+    display: flex;
+    align-items: stretch;
+    padding: 48px 44px;
+    overflow: hidden;
+    background-color: var(--navy-900);
+    background-size: cover;
+    background-position: center;
+}
+
+/* The overlay is a pseudo-element so the photograph stays a background image and the
+   content below keeps its own stacking context.
+
+   One layer, and a deliberately heavy one. Both supplied photographs contain pure white
+   pixels, and a white pixel under this fill renders at `a * 11 + (1 - a) * 255` on the
+   red channel. Holding that at or below #21 - the ceiling the design sets - needs an
+   alpha of at least .91, so a lighter gradient would breach the ceiling wherever the
+   photograph is brightest, however well it looked on the mid-tones. */
+.auth-brand::before {
+    --overlay: 11, 26, 48;
+
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(var(--overlay), .94), rgba(var(--overlay), .91));
+}
+
+.auth-brand__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #FFFFFF;
+    /* A definite width is required, not cosmetic: this is a flex item, so without it the
+       box is shrink-to-fit and the paragraph's own max-width resolves against a box that
+       is itself sized by that paragraph. */
+    width: 100%;
+}
+
+/* Pill badge, top of the panel. */
+.auth-brand__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin: 0;
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .10);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    color: #FFFFFF;
+}
+
+.auth-brand__badge svg {
+    flex: 0 0 auto;   /* the label wraps before the icon is allowed to squash */
+    width: 16px;
+    height: 16px;
+}
+
+.auth-brand__heading {
+    margin: 0 0 16px;
+    font-size: 40px;
+    line-height: 46px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.auth-brand__text {
+    margin: 0;
+    max-width: 520px;
+    font-size: 16px;
+    line-height: 28px;
+    color: rgba(255, 255, 255, .85);
+}
+
+/* ---------------------------------------------------------------- Right panel */
+
+.auth-form-panel {
+    flex: 1 1 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    background: var(--surface);
+}
+
+.auth-form {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-form--wide { max-width: 560px; }
+
+/* The brand lockup, centred above the heading. The artwork carries the wordmark and the
+   tagline itself, so nothing is repeated as text beneath it. Its #FCFCFC background is
+   left as supplied: against the #FFFFFF panel that is a 1.2% difference. */
+.auth-form__logo {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin: 0 auto 16px;
+}
+
+.auth-form__title {
+    font-size: 28px;
+    line-height: 34px;
+    margin: 0;
+}
+
+.auth-form__subtitle {
+    margin: 6px 0 24px;
+    color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- Fields */
+
+.field { margin-bottom: 16px; }
+
+.field > label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy-900);
+}
+
+.field__control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.field__icon {
+    position: absolute;
+    left: 12px;
+    /* Centred explicitly rather than relying on the flex container's static
+       position for an absolutely positioned child, which browsers resolve
+       inconsistently. */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.field input[type="text"],
+.field input[type="password"],
+.field input[type="email"],
+.field input[type="tel"],
+.field input[type="number"],
+.field select,
+.field textarea {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface);
+}
+
+.field textarea { height: auto; padding: 10px 12px; }
+
+/* Keep the value clear of the leading icon.
+
+   These selectors repeat the [type=...] attribute deliberately. The block above sets
+   `padding: 0 12px` via `.field input[type="text"]`, specificity (0,2,1). A plain
+   `.field--with-icon input` is only (0,1,1) and loses to it whatever the source order,
+   which is what left the placeholder text sitting underneath the icon. Matching the
+   attribute selectors ties the specificity, so the later rule wins.
+
+   Both "password" and "text" are listed because the eye toggle swaps the type at
+   runtime; without both, the padding would jump the moment a password is revealed. */
+.field--with-icon input[type="text"],
+.field--with-icon input[type="password"],
+.field--with-icon input[type="email"],
+.field--with-icon input[type="tel"] {
+    /* Icon occupies 12-30px, so this leaves a 16px gap before the text starts. */
+    padding-left: 46px;
+}
+
+/* Same problem on the right: the eye toggle is a 34px button inset by 6px, so the
+   value needs room or a long password runs underneath it. */
+.field--with-toggle input[type="text"],
+.field--with-toggle input[type="password"] {
+    padding-right: 46px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: var(--blue-600);
+    outline: var(--focus-ring);
+    outline-offset: 1px;
+}
+
+/* Marks the offending input when a server-side rule rejects it. */
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] {
+    border-color: var(--red-600);
+}
+
+.field__error {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--red-700);
+}
+
+/* Eye toggle. type="button" so it never submits the form. */
+.password-toggle {
+    position: absolute;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.password-toggle:hover { color: var(--navy-900); }
+
+/* ---------------------------------------------------------------- Buttons */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.btn--block { width: 100%; }
+
+.btn--primary { background: var(--blue-600); color: #FFFFFF; }
+.btn--primary:hover { background: var(--blue-700); }
+
+.btn--outline {
+    background: var(--surface);
+    border-color: var(--blue-600);
+    color: var(--blue-600);
+}
+.btn--outline:hover { background: var(--blue-100); }
+
+.btn--success { background: var(--green-600); color: #FFFFFF; }
+.btn--success:hover { background: var(--green-700); }
+
+.btn--danger { background: var(--red-600); color: #FFFFFF; }
+.btn--danger:hover { background: var(--red-700); }
+
+.btn--ghost {
+    background: #EDF0F4;
+    color: var(--badge-neutral-text);
+}
+
+.auth-form .btn + .btn { margin-top: 12px; }
+
+.auth-form__link {
+    display: block;
+    margin-top: 16px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--blue-600);
+}
+
+/* ---------------------------------------------------------------- Alerts */
+
+/* Rendered with role="alert" so a screen reader announces it without the user
+   having to go looking for it. */
+.alert {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+}
+
+.alert--error {
+    background: var(--red-100);
+    color: var(--badge-danger-text);
+    border: 1px solid #F5C4BC;
+}
+
+.alert--success {
+    background: var(--green-100);
+    color: var(--badge-success-text);
+    border: 1px solid #BFE3C4;
+}
+
+.alert--info {
+    background: var(--blue-100);
+    color: var(--badge-info-text);
+    border: 1px solid #BCD6F7;
+}
+
+.alert ul { margin: 6px 0 0; padding-left: 18px; }
+
+/* ---------------------------------------------------------------- Account type */
+
+.account-type { display: flex; gap: 12px; margin-bottom: 8px; }
+
+.account-type__option { flex: 1 1 0; }
+
+/* The radio itself stays in the DOM and focusable - it is visually replaced, not
+   removed, so the keyboard and screen-reader experience is unchanged. */
+.account-type__option input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.account-type__option label {
+    display: block;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.account-type__option input:checked + label {
+    border-color: var(--blue-600);
+    background: var(--blue-100);
+    color: var(--blue-700);
+}
+
+.account-type__option input:focus-visible + label {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+.role-fields[hidden] { display: none; }
+
+/* Password strength meter (progressive enhancement - absent without JavaScript). */
+.strength { margin-top: 8px; }
+
+.strength__bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+}
+
+.strength__fill {
+    height: 100%;
+    width: 0;
+    background: var(--red-600);
+    transition: width .2s ease, background-color .2s ease;
+}
+
+.strength__label {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- Responsive */
+
+/* F.5: below 768 the brand panel becomes a banner above the form. */
+@media (max-width: 767px) {
+    .auth-layout { flex-direction: column; }
+
+    .auth-brand {
+        /* 200 rather than the old 160: the banner now carries a badge and a heading
+           instead of a single image, and 160 crowded them. */
+        flex: 0 0 auto;
+        min-height: 200px;
+        padding: 20px;
+    }
+
+    /* The paragraph goes. The badge and the heading say what the panel is for; a
+       three-line paragraph on a phone only pushes the form itself below the fold. */
+    .auth-brand__text { display: none; }
+
+    .auth-brand__heading {
+        margin: 0;
+        font-size: 28px;
+        line-height: 34px;
+    }
+
+    .auth-form-panel { padding: 28px 20px; }
+
+    .auth-form__logo { width: 140px; }
+
+    .field-group { grid-template-columns: 1fr; }
+
+    /* Tap targets stay at least 44px (F.5). */
+    .btn { height: 44px; }
+    .field input, .field select { height: 44px; }
+}

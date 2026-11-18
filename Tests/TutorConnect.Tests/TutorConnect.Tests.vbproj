@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    SDK-style so NuGet restores without a nuget.exe on the machine. The application itself
+    stays a classic Web Application Project; the two styles coexist in one solution.
+
+    The application is referenced as a built assembly rather than by ProjectReference: a
+    Web Application Project is not designed to be consumed as a library, and a HintPath to
+    its output keeps the test project independent of the web project's build quirks. Build
+    the solution first; these tests then run against exactly what was built.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net481</TargetFramework>
+    <RootNamespace>TutorConnect.Tests</RootNamespace>
+    <AssemblyName>TutorConnect.Tests</AssemblyName>
+    <OptionStrict>On</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionInfer>On</OptionInfer>
+    <IsPackable>false</IsPackable>
+    <!-- Nothing here is a console application; vstest hosts it. -->
+    <OutputType>Library</OutputType>
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.2.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+    <Reference Include="TutorConnect">
+      <HintPath>..\..\bin\TutorConnect.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

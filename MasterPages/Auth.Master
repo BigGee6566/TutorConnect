@@ -1,0 +1,70 @@
+<%@ Master Language="VB" AutoEventWireup="false" CodeBehind="Auth.Master.vb" Inherits="TutorConnect.MasterPages.Auth" %>
+
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><asp:ContentPlaceHolder ID="TitleContent" runat="server">TutorConnect</asp:ContentPlaceHolder></title>
+    <link rel="icon" href="<%: ResolveUrl("~/Images/favicon.png") %>" type="image/png" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/themes/colors.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/themes/typography.css") %>" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/Content/css/auth.css") %>" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body class="auth-page">
+    <form id="authForm" runat="server">
+        <a class="skip-link" href="#mainContent">Skip to main content</a>
+
+        <div class="auth-layout">
+
+            <%-- Left panel: photograph under a deep navy overlay (D-09). The image is set
+                 from code-behind so Login and Register can use different photographs.
+
+                 The brand lockup used to sit here. It does not any more: the supplied
+                 artwork has a solid #FCFCFC background and no alpha, so over the navy it
+                 read as a pale rectangle. It now lives on the white form panel, where that
+                 background is indistinguishable from the surface. --%>
+            <div class="auth-brand" runat="server" id="brandPanel">
+                <div class="auth-brand__inner">
+
+                    <%-- Login and Register carry different copy here. A placeholder rather
+                         than a master property, so neither page needs a code-behind change
+                         to supply it. The default below is the Login copy, which is what
+                         Setup and Forgotten Password inherit. --%>
+                    <asp:ContentPlaceHolder ID="BrandContent" runat="server">
+
+                        <p class="auth-brand__badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" aria-hidden="true" focusable="false">
+                                <path d="M3 21h18" />
+                                <path d="M5 21V10l7-5 7 5v11" />
+                                <path d="M10 21v-5h4v5" />
+                            </svg>
+                            Academic Tutoring &amp; Governance Portal
+                        </p>
+
+                        <div class="auth-brand__lower">
+                            <h2 class="auth-brand__heading">Connect. Learn.<br />Succeed.</h2>
+                            <p class="auth-brand__text">
+                                Streamlining higher education tutoring with verified peer
+                                mentors, responsive schedule booking, and comprehensive
+                                institutional administrative oversight.
+                            </p>
+                        </div>
+
+                    </asp:ContentPlaceHolder>
+                </div>
+            </div>
+
+            <%-- Right panel: the form. --%>
+            <main class="auth-form-panel" id="mainContent">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            </main>
+
+        </div>
+
+        <asp:ContentPlaceHolder ID="ScriptContent" runat="server" />
+    </form>
+</body>
+</html>

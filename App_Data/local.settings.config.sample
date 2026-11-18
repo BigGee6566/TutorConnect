@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TEMPLATE - copy this file to "local.settings.config" in the same folder and set a
+  password of your own. The real file is git-ignored and must never be committed.
+
+  Web.config points at it with <appSettings file="App_Data\local.settings.config" />,
+  which is optional: the application still starts when the file is absent. The seeder
+  then refuses to run rather than falling back to a default password.
+
+  The value below is a placeholder, not a password in use anywhere.
+-->
+<appSettings>
+  <add key="Seed:DevPassword" value="CHANGE-ME-Local1" />
+</appSettings>

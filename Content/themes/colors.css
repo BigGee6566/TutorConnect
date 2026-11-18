@@ -1,0 +1,74 @@
+/* TutorConnect design tokens.
+   Values marked "sampled" were measured from the design mockup. Values marked
+   "recommended" were chosen to clear WCAG 2.1 AA 4.5:1 against their paired fill,
+   because the mockup's badge text is anti-aliased too finely to sample reliably. */
+
+:root {
+    /* Brand - sampled */
+    --navy-900: #0E223C;    /* sidebar, headings, body text */
+    --navy-700: #0E3168;    /* active sidebar item */
+    --navy-500: #1B3E6F;    /* sidebar hover */
+    --blue-600: #185BC5;    /* primary button, links, card icons */
+    --blue-700: #1247A0;    /* primary hover */
+    --blue-100: #DEECFE;    /* Scheduled badge fill */
+
+    /* Semantic.
+       The green and red below were sampled from the mockup as #22A34A and #E4452A, but
+       both carry white button labels at 12px/600, and measured only 3.28:1 and 4.05:1
+       against white - under the 4.5:1 that AT-28 requires for text that size. They are
+       darkened here to the nearest shade that clears it with margin, keeping the hue:
+         white on #1C8038 = 5.01:1   (was 3.28:1)
+         white on #D33A1E = 4.78:1   (was 4.05:1)
+       The -700 hovers move with them so hover stays darker than rest. */
+    --green-600: #1C8038;   /* success buttons - AA-adjusted from the sampled #22A34A */
+    --green-700: #187733;
+    --green-100: #E2F4E3;   /* Confirmed / Completed badge fill */
+    --red-600: #D33A1E;     /* danger buttons - AA-adjusted from the sampled #E4452A */
+    --red-700: #C33619;
+    --red-100: #FEEDEB;     /* Declined / Cancelled badge fill */
+
+    /* Left exactly as sampled. White text on it is only 2.99:1, so the two count badges
+       that use it carry --navy-900 text instead (5.34:1) rather than the colour changing. */
+    --orange-500: #F36C39;  /* requests icon, count badges */
+    --orange-100: #FEEAD3;  /* Pending badge fill */
+    --gold-500: #FDC635;    /* rating stars */
+
+    /* Neutrals */
+    --surface: #FFFFFF;
+    --surface-alt: #F8F9FB; /* app background */
+    --border: #E3E8EF;
+    --text: #0E223C;
+    --text-muted: #5A6B82;
+
+    /* Badge text - recommended, AA-checked against the fills above */
+    --badge-pending-text: #9A4B06;
+    --badge-success-text: #186A34;
+    --badge-danger-text: #A32615;
+    --badge-info-text: #12448F;
+
+    /* Neutral badge (Cancelled) */
+    --badge-neutral-fill: #EDF0F4;
+    --badge-neutral-text: #4A5768;
+
+    /* Shape and motion */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --shadow-card: 0 6px 18px rgba(14, 34, 60, .08);
+    --focus-ring: 2px solid var(--blue-600);
+}
+
+/* AT-27 / F.6: focus is always visible, and never removed without a replacement. */
+:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* F.6: honour a user's reduced-motion preference. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

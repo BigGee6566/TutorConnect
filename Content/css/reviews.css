@@ -1,0 +1,57 @@
+﻿/* Reviews: the star control and the star display in tables. */
+
+.stars { letter-spacing: 1px; }
+/* The glyphs are decoration and are marked aria-hidden wherever they are rendered.
+   They cannot meet 4.5:1 as text - gold on white measures 1.58:1, and darkening it far
+   enough stops it being gold - so the rating is carried by .stars__value beside them and
+   by the sr-only phrase after them. Both of those pass comfortably. */
+.stars__on  { color: var(--gold-500); }
+.stars__off { color: var(--border); }
+
+/* The rating as a readable number, for anyone who cannot separate pale gold from pale
+   grey at 14px. */
+.stars__value {
+    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* The radio buttons stay in the DOM and keep focus; only their visual form changes,
+   so the control works with the keyboard and without JavaScript. */
+.star-rating__list { display: inline-flex; gap: 4px; }
+
+.star-rating__list input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.star-rating__list label {
+    cursor: pointer;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-muted);
+    background: var(--surface);
+}
+
+.star-rating__list input[type="radio"]:checked + label {
+    border-color: var(--gold-500);
+    background: #FFF7E0;
+    color: var(--navy-900);
+    font-weight: 600;
+}
+
+.star-rating__list input[type="radio"]:focus-visible + label {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.star-rating__label {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+}
