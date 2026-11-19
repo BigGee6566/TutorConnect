@@ -32,7 +32,7 @@ Namespace MasterPages
 
         ''' <summary>
         ''' The heading is bound at PreRenderComplete because a page typically composes it
-        ''' from the account ("Welcome, Sinesipho!"), which is only available once the
+        ''' from the account ("Welcome, Zanele!"), which is only available once the
         ''' async load has run.
         ''' </summary>
         Protected Overrides Sub OnInit(e As EventArgs)
@@ -49,7 +49,7 @@ Namespace MasterPages
         ''' <summary>Which menu the sidebar renders. Supplied by each concrete master.</summary>
         Protected MustOverride ReadOnly Property ShellRole As UserRole
 
-        ''' <summary>H1 shown above the content, e.g. "Welcome, Sinesipho!".</summary>
+        ''' <summary>H1 shown above the content, e.g. "Welcome, Zanele!".</summary>
         Public Property PageTitle As String = String.Empty
 
         ''' <summary>Muted line beneath the heading.</summary>

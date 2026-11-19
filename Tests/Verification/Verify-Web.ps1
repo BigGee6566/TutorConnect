@@ -163,8 +163,8 @@ try {
 ''
 '=== SEC-04  Role authorisation at the URL ==='
 $admin   = SignIn 'admin' $Password
-$student = SignIn 'sinesipho_t' $Password
-$tutor   = SignIn 'nhlawulo_m' $Password
+$student = SignIn 'zanele_k' $Password
+$tutor   = SignIn 'bongani_z' $Password
 
 foreach ($url in '/Admin/Dashboard.aspx', '/Admin/Users/ManageUsers.aspx') {
     $code = StatusOf "$base$url" $student

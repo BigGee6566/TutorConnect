@@ -1,7 +1,5 @@
 # TutorConnect — Final Report
 
-**Information Systems 3 · Walter Sisulu University**
-Tshangela Sinesipho (231504160) · Maluleke Nhlawulo (231042353)
 
 ASP.NET Web Forms (VB.NET) on .NET Framework 4.8.1, SQL Server 2022 Express, no ORM,
 `Option Strict On` throughout.
@@ -128,10 +126,10 @@ They are development accounts and have no place on a deployed system.
 | Username | Role |
 |---|---|
 | `admin` | Administrator |
-| `sinesipho_t` (or `sines@gmail.com`) | Student, STU2026001 |
+| `zanele_k` (or `zanele@example.com`) | Student, STU2026001 |
 | `john_doe` | Student, STU2026002 |
 | `akhona_n`, `luvo_m`, `thabo_j` | Students |
-| `nhlawulo_m` | Tutor, approved, Information Systems (Third Year) |
+| `bongani_z` | Tutor, approved, Information Systems (Third Year) |
 | `lerato_m`, `andile_d` | Tutors, approved |
 
 ---

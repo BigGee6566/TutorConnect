@@ -190,10 +190,10 @@ The seeded accounts all share the `Seed:DevPassword` value from step 3:
 | Username | Role | Notes |
 |---|---|---|
 | `admin` | Administrator | |
-| `sinesipho_t` | Student | STU2026001, also signs in as `sines@gmail.com` |
+| `zanele_k` | Student | STU2026001, also signs in as `zanele@example.com` |
 | `john_doe` | Student | STU2026002 |
 | `akhona_n`, `luvo_m`, `thabo_j` | Students | STU2026003–005 |
-| `nhlawulo_m` | Tutor | Approved, teaches Information Systems (Third Year) |
+| `bongani_z` | Tutor | Approved, teaches Information Systems (Third Year) |
 | `lerato_m`, `andile_d` | Tutors | Approved |
 
 These are development accounts with one shared password. They have no place on a

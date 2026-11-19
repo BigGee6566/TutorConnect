@@ -2,8 +2,6 @@
 
 A tutoring management system for students, tutors and administrators. Students find tutors and request sessions, tutors publish availability and manage their bookings, and administrators oversee users, subjects and reviews.
 
-Built for **Information Systems 3** at Walter Sisulu University.
-
 **Stack:** ASP.NET Web Forms (VB.NET) · .NET Framework 4.8.1 · SQL Server 2022 Express · no ORM, `Option Strict On` throughout
 
 ---
@@ -113,9 +111,3 @@ PowerShell acceptance and fresh-install checks live in `Tests/Verification/`.
 | [Testing Plan](Documentation/TestingPlan.md) | Test approach and coverage |
 | [Security Checklist](Documentation/SecurityChecklist.md) | Security requirements and the evidence for each |
 | [Final Report](Documentation/FinalReport.md) | What was built, measured against the specification |
-
----
-
-## Authors
-
-Tshangela Sinesipho · Maluleke Nhlawulo, Walter Sisulu University

@@ -202,8 +202,8 @@ Namespace TutorConnect.Tests
         Public Async Function AT04_EachRoleSignsInAndLandsOnItsOwnDashboard() As Task
             Dim expected As New Dictionary(Of String, UserRole) From {
                 {"admin", UserRole.Administrator},
-                {"sinesipho_t", UserRole.Student},
-                {"nhlawulo_m", UserRole.Tutor}
+                {"zanele_k", UserRole.Student},
+                {"bongani_z", UserRole.Tutor}
             }
 
             For Each pair In expected
@@ -217,7 +217,7 @@ Namespace TutorConnect.Tests
 
         <TestMethod>
         Public Async Function AT04_SigningInByEmailAddressAlsoWorks() As Task
-            Dim result = Await _auth.AuthenticateAsync("sines@gmail.com", TestDatabase.DevPassword)
+            Dim result = Await _auth.AuthenticateAsync("zanele@example.com", TestDatabase.DevPassword)
             Assert.IsTrue(result.Success, result.Message)
         End Function
 
@@ -329,7 +329,7 @@ Namespace TutorConnect.Tests
         ''' </summary>
         <TestMethod>
         Public Async Function BR04_APersonCannotBeBothStudentAndTutor() As Task
-            Dim tutorPerson = Await _users.FindByUserNameOrEmailAsync("nhlawulo_m")
+            Dim tutorPerson = Await _users.FindByUserNameOrEmailAsync("bongani_z")
 
             Await Assert.ThrowsExceptionAsync(Of SqlException)(
                 Function()

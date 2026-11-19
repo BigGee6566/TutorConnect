@@ -557,8 +557,8 @@ Namespace TutorConnect.Tests
             Assert.IsTrue(tutors.Count > 0)
             Assert.IsTrue(tutors.All(Function(p) p.Role = UserRole.Tutor), "role filter")
 
-            Dim byName = (Await _admin.SearchUsersAsync("Sinesipho", Nothing, Nothing)).Data
-            Assert.IsTrue(byName.Any(Function(p) p.FirstName = "Sinesipho"), "name filter")
+            Dim byName = (Await _admin.SearchUsersAsync("Zanele", Nothing, Nothing)).Data
+            Assert.IsTrue(byName.Any(Function(p) p.FirstName = "Zanele"), "name filter")
         End Function
 
 #End Region

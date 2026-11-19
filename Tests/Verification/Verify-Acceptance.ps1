@@ -215,11 +215,11 @@ return a.tagName+id+cl;})()
                           '/Admin/Subjects/ManageSubjects.aspx', '/Admin/Bookings/ManageBookings.aspx',
                           '/Admin/Reviews/ManageReviews.aspx', '/Admin/Audit/AuditLog.aspx',
                           '/Notifications/Index.aspx')
-        'sinesipho_t' = @('/Student/Dashboard.aspx', '/Student/Tutors/FindTutor.aspx',
+        'zanele_k' = @('/Student/Dashboard.aspx', '/Student/Tutors/FindTutor.aspx',
                           '/Student/Requests/MyRequests.aspx', '/Student/Requests/RequestSession.aspx',
                           '/Student/Bookings/MyBookings.aspx', '/Student/Reviews/MyReviews.aspx',
                           '/Student/Subjects/MySubjects.aspx', '/Student/Profile/MyProfile.aspx')
-        'nhlawulo_m'  = @('/Tutor/Dashboard.aspx', '/Tutor/Requests/StudentRequests.aspx',
+        'bongani_z'  = @('/Tutor/Dashboard.aspx', '/Tutor/Requests/StudentRequests.aspx',
                           '/Tutor/Availability/MyAvailability.aspx', '/Tutor/Sessions/MySessions.aspx',
                           '/Tutor/Subjects/MySubjects.aspx', '/Tutor/Profile/MyProfile.aspx')
     }
@@ -244,7 +244,7 @@ return a.tagName+id+cl;})()
         }
     }
 
-    foreach ($user in @('admin', 'sinesipho_t', 'nhlawulo_m')) {
+    foreach ($user in @('admin', 'zanele_k', 'bongani_z')) {
         ''
         "--- $user ---"
         SignIn $user | Out-Null
@@ -291,7 +291,7 @@ return a.tagName+id+cl;})()
 
     ''
     '--- sidebar drawer ---'
-    SignIn 'sinesipho_t' | Out-Null
+    SignIn 'zanele_k' | Out-Null
 
     # 1024 is NOT a drawer width. responsive.css hides the hamburger at min-width: 1024 and
     # shows the drawer at max-width: 1023, so at exactly 1024 the sidebar is fixed and on
@@ -412,7 +412,7 @@ return (cs.display!=='none'&&s.getBoundingClientRect().left>=0)?'on-screen':'off
     Check 'the username field is reachable by Tab' $reached "gave up after $steps tabs"
 
     if ($reached) {
-        TypeText 'sinesipho_t'
+        TypeText 'zanele_k'
         Tab
         $d = ActiveDescriptor
         Check 'Tab moves to the password field' ($d -like '*txtPassword*') "landed on $d"
@@ -653,12 +653,12 @@ return (cs.display!=='none'&&s.getBoundingClientRect().left>=0)?'on-screen':'off
     $contrastPages = @(
         @{ User = ''; Url = '/Account/Login.aspx' },
         @{ User = ''; Url = '/Account/Register.aspx' },
-        @{ User = 'sinesipho_t'; Url = '/Student/Dashboard.aspx' },
-        @{ User = 'sinesipho_t'; Url = '/Student/Tutors/FindTutor.aspx' },
-        @{ User = 'sinesipho_t'; Url = '/Student/Requests/MyRequests.aspx' },
-        @{ User = 'sinesipho_t'; Url = '/Student/Bookings/MyBookings.aspx' },
-        @{ User = 'nhlawulo_m'; Url = '/Tutor/Dashboard.aspx' },
-        @{ User = 'nhlawulo_m'; Url = '/Tutor/Requests/StudentRequests.aspx' },
+        @{ User = 'zanele_k'; Url = '/Student/Dashboard.aspx' },
+        @{ User = 'zanele_k'; Url = '/Student/Tutors/FindTutor.aspx' },
+        @{ User = 'zanele_k'; Url = '/Student/Requests/MyRequests.aspx' },
+        @{ User = 'zanele_k'; Url = '/Student/Bookings/MyBookings.aspx' },
+        @{ User = 'bongani_z'; Url = '/Tutor/Dashboard.aspx' },
+        @{ User = 'bongani_z'; Url = '/Tutor/Requests/StudentRequests.aspx' },
         @{ User = 'admin'; Url = '/Admin/Dashboard.aspx' },
         @{ User = 'admin'; Url = '/Admin/Users/ManageUsers.aspx' },
         @{ User = 'admin'; Url = '/Admin/Reviews/ManageReviews.aspx' },

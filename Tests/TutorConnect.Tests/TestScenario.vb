@@ -55,16 +55,16 @@ Namespace TutorConnect.Tests
         Public Shared Async Function CreateAsync() As Task(Of TestScenario)
             Dim scenario As New TestScenario()
 
-            scenario.Student = Await scenario._users.FindByUserNameOrEmailAsync("sinesipho_t")
-            Assert.IsNotNull(scenario.Student, "seed user sinesipho_t")
+            scenario.Student = Await scenario._users.FindByUserNameOrEmailAsync("zanele_k")
+            Assert.IsNotNull(scenario.Student, "seed user zanele_k")
             scenario.StudentId = (Await scenario._users.GetStudentByPersonIdAsync(scenario.Student.PersonId)).StudentId
 
             scenario.OtherStudent = Await scenario._users.FindByUserNameOrEmailAsync("john_doe")
             Assert.IsNotNull(scenario.OtherStudent, "seed user john_doe")
             scenario.OtherStudentId = (Await scenario._users.GetStudentByPersonIdAsync(scenario.OtherStudent.PersonId)).StudentId
 
-            scenario.TutorPerson = Await scenario._users.FindByUserNameOrEmailAsync("nhlawulo_m")
-            Assert.IsNotNull(scenario.TutorPerson, "seed user nhlawulo_m")
+            scenario.TutorPerson = Await scenario._users.FindByUserNameOrEmailAsync("bongani_z")
+            Assert.IsNotNull(scenario.TutorPerson, "seed user bongani_z")
             scenario.TutorId = (Await scenario._users.GetTutorByPersonIdAsync(scenario.TutorPerson.PersonId)).TutorId
 
             scenario.TutorSubjectId = Await TestDatabase.ScalarAsync(

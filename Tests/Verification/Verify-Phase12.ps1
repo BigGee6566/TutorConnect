@@ -111,7 +111,7 @@ if (-not $ready) { throw "The site never came up at $base" }
 ''
 '--- the student can reach a scheduled session ---'
 
-$student = SignIn 'sinesipho_t'
+$student = SignIn 'zanele_k'
 $list = Invoke-WebRequest "$base/Student/Bookings/MyBookings.aspx" -WebSession $student `
     -UseBasicParsing -TimeoutSec 60
 
@@ -161,7 +161,7 @@ Check 'the proposal posts without an error page' `
     ($posted.StatusCode -eq 200 -and $posted.Content -notmatch 'Server Error in')
 
 # Fresh session: proves it was stored, not merely rendered back.
-$studentAgain = SignIn 'sinesipho_t'
+$studentAgain = SignIn 'zanele_k'
 $reread = Invoke-WebRequest "$base/Student/Bookings/BookingDetails.aspx?bookingId=$bookingId" `
     -WebSession $studentAgain -UseBasicParsing -TimeoutSec 60
 
@@ -183,7 +183,7 @@ $withdrawn = PostBack "$base/Student/Bookings/BookingDetails.aspx?bookingId=$boo
 Check 'withdrawing posts without an error page' `
     ($withdrawn.StatusCode -eq 200 -and $withdrawn.Content -notmatch 'Server Error in')
 
-$afterWithdraw = SignIn 'sinesipho_t'
+$afterWithdraw = SignIn 'zanele_k'
 $reReadAfterWithdraw = Invoke-WebRequest "$base/Student/Bookings/BookingDetails.aspx?bookingId=$bookingId" `
     -WebSession $afterWithdraw -UseBasicParsing -TimeoutSec 60
 Check 'the proposal is gone after a new sign-in' ($reReadAfterWithdraw.Content -notmatch 'Waiting for the tutor')
@@ -209,7 +209,7 @@ Check 'a fresh proposal can be made after withdrawing' `
 ''
 '--- postponement: the tutor sees and answers it ---'
 
-$tutor = SignIn 'nhlawulo_m'
+$tutor = SignIn 'bongani_z'
 $sessions = Invoke-WebRequest "$base/Tutor/Sessions/MySessions.aspx" -WebSession $tutor `
     -UseBasicParsing -TimeoutSec 60
 
@@ -244,7 +244,7 @@ if ($answerButton.Success) {
 ''
 '--- the student sees the new date, in a new session ---'
 
-$studentThird = SignIn 'sinesipho_t'
+$studentThird = SignIn 'zanele_k'
 $moved = Invoke-WebRequest "$base/Student/Bookings/BookingDetails.aspx?bookingId=$bookingId" `
     -WebSession $studentThird -UseBasicParsing -TimeoutSec 60
 
@@ -277,7 +277,7 @@ $cancelled = PostBack "$base/Student/Bookings/BookingDetails.aspx?bookingId=$boo
 Check 'cancelling posts without an error page' `
     ($cancelled.StatusCode -eq 200 -and $cancelled.Content -notmatch 'Server Error in')
 
-$afterCancel = SignIn 'sinesipho_t'
+$afterCancel = SignIn 'zanele_k'
 $cancelledView = Invoke-WebRequest "$base/Student/Bookings/BookingDetails.aspx?bookingId=$bookingId" `
     -WebSession $afterCancel -UseBasicParsing -TimeoutSec 60
 
@@ -289,7 +289,7 @@ Check 'who cancelled it is recorded' ($cancelledView.Content -match 'Cancelled b
 ''
 '--- the tutor sees the cancellation ---'
 
-$tutorAgain = SignIn 'nhlawulo_m'
+$tutorAgain = SignIn 'bongani_z'
 $notifications = Invoke-WebRequest "$base/Notifications/Index.aspx" -WebSession $tutorAgain `
     -UseBasicParsing -TimeoutSec 60
 
@@ -363,7 +363,7 @@ if ($moveButton.Success) {
 ''
 '--- the audit log is administrators only ---'
 
-foreach ($who in 'sinesipho_t', 'nhlawulo_m') {
+foreach ($who in 'zanele_k', 'bongani_z') {
     $session = SignIn $who
     $code = 0
     try {

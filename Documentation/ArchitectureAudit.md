@@ -106,7 +106,7 @@ Seed data exists in exactly two places, both explicit:
 | File | Contents |
 |---|---|
 | `App_Data/Scripts/02_SeedLookups.sql` | Subjects (Mathematics, Information Systems, English) and study levels (First/Second/Third Year). Re-runnable; inserts only what is missing. |
-| `App_Data/Seed/SeedRunner.vb` | Four required development accounts (`admin`, `sinesipho_t`, `nhlawulo_m`, `john_doe`) plus an optional demo set: three extra tutors/students, subjects taught, and future availability slots. |
+| `App_Data/Seed/SeedRunner.vb` | Four required development accounts (`admin`, `zanele_k`, `bongani_z`, `john_doe`) plus an optional demo set: three extra tutors/students, subjects taught, and future availability slots. |
 
 `SeedRunner` refuses to run from a web request unless the application is compiled with
 `debug="true"`, and refuses entirely if the development password key is absent rather than

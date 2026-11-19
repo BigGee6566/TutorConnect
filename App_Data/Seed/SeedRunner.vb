@@ -58,12 +58,12 @@ Namespace Seed
                                      "admin@tutorconnect.ac.za", "0800000000", "East London",
                                      UserRole.Administrator, password, Nothing, Nothing).ConfigureAwait(False)
 
-            Await EnsureAccountAsync("sinesipho_t", "Sinesipho", "Tshangela", "Female",
-                                     "sines@gmail.com", "0821234567", "East London",
+            Await EnsureAccountAsync("zanele_k", "Zanele", "Khumalo", "Female",
+                                     "zanele@example.com", "0821234567", "East London",
                                      UserRole.Student, password, "STU2026001", Nothing).ConfigureAwait(False)
 
-            Await EnsureAccountAsync("nhlawulo_m", "Nhlawulo", "Maluleke", "Male",
-                                     "nhlaw@gmail.com", "0839876543", "Komani",
+            Await EnsureAccountAsync("bongani_z", "Bongani", "Zulu", "Male",
+                                     "bongani@example.com", "0839876543", "Komani",
                                      UserRole.Tutor, password, Nothing,
                                      NewTutor("BSc Computer Science", 5, 150D,
                                               "I am passionate about helping students understand complex IT " &
@@ -74,7 +74,7 @@ Namespace Seed
                                      "john@gmail.com", "0721112222", "Mthatha",
                                      UserRole.Student, password, "STU2026002", Nothing).ConfigureAwait(False)
 
-            Await ApproveTutorAsync("nhlawulo_m").ConfigureAwait(False)
+            Await ApproveTutorAsync("bongani_z").ConfigureAwait(False)
 
             If includeDemoData Then
                 Await SeedDemoDataAsync(password).ConfigureAwait(False)
@@ -118,7 +118,7 @@ Namespace Seed
                                      UserRole.Student, password, "STU2026005", Nothing).ConfigureAwait(False)
 
             ' Subjects taught, then slots against them.
-            Await EnsureTutorSubjectAsync("nhlawulo_m", "Information Systems", "Third Year").ConfigureAwait(False)
+            Await EnsureTutorSubjectAsync("bongani_z", "Information Systems", "Third Year").ConfigureAwait(False)
             Await EnsureTutorSubjectAsync("lerato_m", "Information Systems", "Third Year").ConfigureAwait(False)
             Await EnsureTutorSubjectAsync("andile_d", "Information Systems", "Third Year").ConfigureAwait(False)
             Await EnsureTutorSubjectAsync("andile_d", "Mathematics", "Second Year").ConfigureAwait(False)
@@ -127,9 +127,9 @@ Namespace Seed
             Dim day1 As Date = Date.Today.AddDays(3)
             Dim day2 As Date = Date.Today.AddDays(4)
 
-            Await EnsureAvailabilityAsync("nhlawulo_m", "Information Systems", "Third Year", day1, "10:00", "12:00").ConfigureAwait(False)
-            Await EnsureAvailabilityAsync("nhlawulo_m", "Information Systems", "Third Year", day1, "14:00", "16:00").ConfigureAwait(False)
-            Await EnsureAvailabilityAsync("nhlawulo_m", "Information Systems", "Third Year", day2, "09:00", "11:00").ConfigureAwait(False)
+            Await EnsureAvailabilityAsync("bongani_z", "Information Systems", "Third Year", day1, "10:00", "12:00").ConfigureAwait(False)
+            Await EnsureAvailabilityAsync("bongani_z", "Information Systems", "Third Year", day1, "14:00", "16:00").ConfigureAwait(False)
+            Await EnsureAvailabilityAsync("bongani_z", "Information Systems", "Third Year", day2, "09:00", "11:00").ConfigureAwait(False)
             Await EnsureAvailabilityAsync("lerato_m", "Information Systems", "Third Year", day1, "13:00", "15:00").ConfigureAwait(False)
             Await EnsureAvailabilityAsync("andile_d", "Information Systems", "Third Year", day2, "10:00", "12:00").ConfigureAwait(False)
         End Function

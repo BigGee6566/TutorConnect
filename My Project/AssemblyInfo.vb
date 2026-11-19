@@ -9,9 +9,9 @@ Imports System.Runtime.InteropServices
 ' associated with an assembly.
 
 <Assembly: AssemblyTitle("TutorConnect")>
-<Assembly: AssemblyDescription("University tutoring management system - Walter Sisulu University, Information Systems 3.")>
+<Assembly: AssemblyDescription("Tutoring management system for students, tutors and administrators.")>
 <Assembly: AssemblyConfiguration("")>
-<Assembly: AssemblyCompany("Walter Sisulu University")>
+<Assembly: AssemblyCompany("TutorConnect")>
 <Assembly: AssemblyProduct("TutorConnect")>
 <Assembly: AssemblyCopyright("Copyright © 2026")>
 <Assembly: AssemblyTrademark("")>

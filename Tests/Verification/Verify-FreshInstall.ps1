@@ -121,7 +121,7 @@ Check 'the seeder ran' $seedOk (($seedRun | Select-Object -Last 3) -join ' ')
 $seeded = [int](Sql "SELECT COUNT(*) FROM dbo.Person" $Database).Trim()
 Check 'accounts now exist' ($seeded -ge 4) "got $seeded"
 
-foreach ($u in 'admin', 'sinesipho_t', 'nhlawulo_m', 'john_doe') {
+foreach ($u in 'admin', 'zanele_k', 'bongani_z', 'john_doe') {
     $found = (Sql "SELECT COUNT(*) FROM dbo.Person WHERE UserName = '$u'" $Database).Trim()
     Check "seed account '$u' exists" ([int]$found -eq 1)
 }
@@ -144,8 +144,8 @@ function Field($html, $name) {
 
 $expectedHome = @{
     'admin'       = 'Admin/Dashboard.aspx'
-    'sinesipho_t' = 'Student/Dashboard.aspx'
-    'nhlawulo_m'  = 'Tutor/Dashboard.aspx'
+    'zanele_k' = 'Student/Dashboard.aspx'
+    'bongani_z'  = 'Tutor/Dashboard.aspx'
     'john_doe'    = 'Student/Dashboard.aspx'
 }
 

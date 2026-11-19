@@ -37,7 +37,7 @@ Namespace Models
         Public Property CreatedAt As Date
         Public Property UpdatedAt As Date?
 
-        ''' <summary>Convenience for headings such as "Welcome, Sinesipho!".</summary>
+        ''' <summary>Convenience for headings such as "Welcome, Zanele!".</summary>
         Public ReadOnly Property FullName As String
             Get
                 Return $"{FirstName} {LastName}".Trim()
