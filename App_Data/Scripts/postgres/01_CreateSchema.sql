@@ -36,12 +36,12 @@ DROP TABLE IF EXISTS dbo.AuditLog, dbo.PostponementRequest, dbo.Review, dbo.Tuto
 
 -- UTC "now", second precision, as SYSUTCDATETIME() was stored in DATETIME2(0).
 CREATE OR REPLACE FUNCTION dbo.sysutcdatetime()
-RETURNS timestamp(0) LANGUAGE sql STABLE
+RETURNS timestamp(0) LANGUAGE sql STABLE SET search_path = pg_catalog
 AS $$ SELECT (now() AT TIME ZONE 'UTC')::timestamp(0) $$;
 
 -- Local wall-clock "now". The application is South African, so local means SAST.
 CREATE OR REPLACE FUNCTION dbo.getdate()
-RETURNS timestamp(0) LANGUAGE sql STABLE
+RETURNS timestamp(0) LANGUAGE sql STABLE SET search_path = pg_catalog
 AS $$ SELECT (now() AT TIME ZONE 'Africa/Johannesburg')::timestamp(0) $$;
 
 /* ---------------------------------------------------------------------------
