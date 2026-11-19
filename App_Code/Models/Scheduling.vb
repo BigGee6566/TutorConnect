@@ -119,7 +119,7 @@ Namespace Models
         ''' </summary>
         Public ReadOnly Property HasEnded As Boolean
             Get
-                Return BookingDate.Add(EndTime) <= Date.Now
+                Return BookingDate.Add(EndTime) <= TutorConnect.Utilities.Clock.Now
             End Get
         End Property
 

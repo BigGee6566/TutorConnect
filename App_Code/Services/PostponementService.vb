@@ -2,7 +2,7 @@ Option Strict On
 Option Explicit On
 
 Imports System.Collections.Generic
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Data
 Imports TutorConnect.Enums
@@ -60,11 +60,11 @@ Namespace Services
 
             ' Local time, because the slot is a local wall-clock time - the same comparison
             ' the booking's own HasEnded uses.
-            If proposedDate.Add(proposedStart) <= Date.Now Then
+            If proposedDate.Add(proposedStart) <= TutorConnect.Utilities.Clock.Now Then
                 Return ServiceResult(Of Integer).Fail("Choose a date and time in the future.")
             End If
 
-            If proposedDate > Date.Today.AddDays(MaximumDaysAhead) Then
+            If proposedDate > TutorConnect.Utilities.Clock.Today.AddDays(MaximumDaysAhead) Then
                 Return ServiceResult(Of Integer).Fail(
                     $"Choose a date within the next {MaximumDaysAhead} days.")
             End If
@@ -88,7 +88,7 @@ Namespace Services
                     bookingId, studentId, proposedDate, proposedStart, proposedEnd,
                     reason, note).ConfigureAwait(False)
 
-            Catch ex As SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 ' UQ_Postponement_OnePending. Two submissions raced, or the student has an
                 ' open proposal already; either way the database is what decides.
                 Return ServiceResult(Of Integer).Fail(

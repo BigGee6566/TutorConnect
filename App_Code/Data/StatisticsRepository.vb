@@ -4,7 +4,7 @@ Option Explicit On
 ' System.Data is imported explicitly: this file lives in a namespace called Data, so an
 ' unqualified "Data.SqlDbType" would bind to TutorConnect.Data instead.
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Models
 
@@ -35,25 +35,25 @@ Namespace Data
                 "  (SELECT COUNT(*) FROM dbo.Tutor) AS TotalTutors, " &
                 "  (SELECT COUNT(*) FROM dbo.Tutor WHERE IsApproved = 0) AS TutorsAwaitingApproval, " &
                 "  (SELECT COUNT(*) FROM dbo.SessionRequest " &
-                "     WHERE CAST(DATEADD(MINUTE, @UtcOffsetMinutes, CreatedAt) AS DATE) = @Today) AS RequestsToday, " &
+                "     WHERE CAST(CreatedAt + make_interval(mins => @UtcOffsetMinutes) AS DATE) = @Today) AS RequestsToday, " &
                 "  (SELECT COUNT(*) FROM dbo.Booking " &
                 "     WHERE BookingDate >= @WeekStart AND BookingDate < @WeekEnd) AS BookingsThisWeek, " &
                 "  (SELECT AVG(CAST(Rating AS DECIMAL(3,2))) FROM dbo.Review) AS AverageRating;"
 
-            Dim today As Date = Date.Today
+            Dim today As Date = TutorConnect.Utilities.Clock.Today
             ' Week runs Monday to Sunday.
             Dim daysSinceMonday As Integer = ((CInt(today.DayOfWeek) + 6) Mod 7)
             Dim weekStart As Date = today.AddDays(-daysSinceMonday)
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@UtcOffsetMinutes", SqlDbType.Int,
-                                                CInt(TimeZoneInfo.Local.GetUtcOffset(Date.Now).TotalMinutes))
+                                                TutorConnect.Utilities.Clock.UtcOffsetMinutes)
                     DatabaseHelper.AddParameter(command, "@Today", SqlDbType.Date, today)
                     DatabaseHelper.AddParameter(command, "@WeekStart", SqlDbType.Date, weekStart)
                     DatabaseHelper.AddParameter(command, "@WeekEnd", SqlDbType.Date, weekStart.AddDays(7))
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then
                             Return New PlatformStatistics()
                         End If

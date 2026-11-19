@@ -130,7 +130,7 @@ Namespace Services
                 Await _subjects.AddStudentSubjectAsync(studentId, subjectId, studyLevelId).ConfigureAwait(False)
                 Return ServiceResult.Ok("Subject added.")
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 ' Two submissions raced past the check above; the unique index caught it.
                 Return ServiceResult.Fail("That subject and study level is already on your list.")
             End Try

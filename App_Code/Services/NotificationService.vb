@@ -56,7 +56,7 @@ Namespace Services
 
                 Return ServiceResult.Ok()
 
-            Catch ex As System.Data.SqlClient.SqlException
+            Catch ex As Npgsql.PostgresException
                 ' Deliberately swallowed into a failed result: the caller's transaction has
                 ' already committed and must not be reported as failed because a
                 ' notification could not be written.

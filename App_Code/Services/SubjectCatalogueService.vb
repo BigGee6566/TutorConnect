@@ -1,7 +1,7 @@
 Option Strict On
 Option Explicit On
 
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Data
 Imports TutorConnect.Enums
@@ -99,7 +99,7 @@ Namespace Services
             Try
                 subjectId = Await _subjects.CreateSubjectAsync(name).ConfigureAwait(False)
 
-            Catch ex As SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 ' Two people named the same new subject at once and the unique index caught
                 ' the loser. Both must succeed, on the same row. The recovery cannot happen
                 ' here - VB forbids Await inside a Catch - so it is flagged and handled

@@ -305,7 +305,7 @@ Namespace Services
 
                 Return If(ok, ServiceResult.Ok("Subject renamed."), ServiceResult.Fail("That subject no longer exists."))
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 Return ServiceResult.Fail("A subject with that name already exists.")
             End Try
         End Function
@@ -363,7 +363,7 @@ Namespace Services
 
                 Return ServiceResult.Ok("Subject deleted.")
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 547
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsForeignKeyViolation(ex)
                 ' A foreign key caught a reference the check above missed - a race, or a
                 ' table the check does not cover. Refuse rather than report a raw error.
                 Return ServiceResult.Fail(
@@ -391,7 +391,7 @@ Namespace Services
                 Await _subjects.CreateStudyLevelAsync(name.Trim(), sortOrder).ConfigureAwait(False)
                 Return ServiceResult.Ok("Study level added.")
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 Return ServiceResult.Fail("A study level with that name already exists.")
             End Try
         End Function
@@ -412,7 +412,7 @@ Namespace Services
 
                 Return If(ok, ServiceResult.Ok("Study level saved."), ServiceResult.Fail("That study level no longer exists."))
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 Return ServiceResult.Fail("A study level with that name already exists.")
             End Try
         End Function

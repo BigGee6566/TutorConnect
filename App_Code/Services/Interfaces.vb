@@ -86,8 +86,8 @@ Namespace Services
                              newState As String,
                              reason As String,
                              responseNote As String,
-                             Optional connection As System.Data.SqlClient.SqlConnection = Nothing,
-                             Optional transaction As System.Data.SqlClient.SqlTransaction = Nothing) As Task
+                             Optional connection As Npgsql.NpgsqlConnection = Nothing,
+                             Optional transaction As Npgsql.NpgsqlTransaction = Nothing) As Task
 
         ''' <summary>Newest first, optionally narrowed. Administrator use only.</summary>
         Function SearchAsync(actionType As String,

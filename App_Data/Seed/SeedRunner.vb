@@ -4,7 +4,7 @@ Option Explicit On
 Imports System.Collections.Generic
 Imports System.Configuration
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports System.Web
 Imports TutorConnect.Data
@@ -124,8 +124,8 @@ Namespace Seed
             Await EnsureTutorSubjectAsync("andile_d", "Mathematics", "Second Year").ConfigureAwait(False)
 
             ' Future slots only, so BR-07 and BR-11 stay satisfiable in a demo.
-            Dim day1 As Date = Date.Today.AddDays(3)
-            Dim day2 As Date = Date.Today.AddDays(4)
+            Dim day1 As Date = TutorConnect.Utilities.Clock.Today.AddDays(3)
+            Dim day2 As Date = TutorConnect.Utilities.Clock.Today.AddDays(4)
 
             Await EnsureAvailabilityAsync("bongani_z", "Information Systems", "Third Year", day1, "10:00", "12:00").ConfigureAwait(False)
             Await EnsureAvailabilityAsync("bongani_z", "Information Systems", "Third Year", day1, "14:00", "16:00").ConfigureAwait(False)
@@ -192,12 +192,12 @@ Namespace Seed
 
         Private Async Function ApproveTutorAsync(userName As String) As Task
             Const sql As String =
-                "UPDATE t SET t.IsApproved = 1, t.ApprovedAt = SYSUTCDATETIME() " &
-                "FROM dbo.Tutor AS t JOIN dbo.Person AS p ON p.PersonId = t.PersonId " &
-                "WHERE p.UserName = @UserName AND t.IsApproved = 0;"
+                "UPDATE dbo.Tutor AS t SET IsApproved = 1, ApprovedAt = SYSUTCDATETIME() " &
+                "FROM dbo.Person AS p " &
+                "WHERE p.PersonId = t.PersonId AND p.UserName = @UserName AND t.IsApproved = 0;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@UserName", SqlDbType.VarChar, 50, userName)
                     Dim affected As Integer = Await command.ExecuteNonQueryAsync().ConfigureAwait(False)
                     If affected > 0 Then Log.Add($"{userName}: tutor approved.")
@@ -213,7 +213,7 @@ Namespace Seed
                 "SELECT t.TutorId, s.SubjectId, l.StudyLevelId " &
                 "FROM dbo.Tutor AS t " &
                 "JOIN dbo.Person AS p ON p.PersonId = t.PersonId " &
-                "CROSS JOIN dbo.[Subject] AS s " &
+                "CROSS JOIN dbo.Subject AS s " &
                 "CROSS JOIN dbo.StudyLevel AS l " &
                 "WHERE p.UserName = @UserName AND s.SubjectName = @SubjectName " &
                 "  AND l.StudyLevelName = @StudyLevelName " &
@@ -221,8 +221,8 @@ Namespace Seed
                 "                  WHERE ts.TutorId = t.TutorId AND ts.SubjectId = s.SubjectId " &
                 "                    AND ts.StudyLevelId = l.StudyLevelId);"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@UserName", SqlDbType.VarChar, 50, userName)
                     DatabaseHelper.AddParameter(command, "@SubjectName", SqlDbType.NVarChar, 100, subjectName)
                     DatabaseHelper.AddParameter(command, "@StudyLevelName", SqlDbType.NVarChar, 50, studyLevelName)
@@ -244,7 +244,7 @@ Namespace Seed
                 "FROM dbo.TutorSubject AS ts " &
                 "JOIN dbo.Tutor      AS t ON t.TutorId = ts.TutorId " &
                 "JOIN dbo.Person     AS p ON p.PersonId = t.PersonId " &
-                "JOIN dbo.[Subject]  AS s ON s.SubjectId = ts.SubjectId " &
+                "JOIN dbo.Subject  AS s ON s.SubjectId = ts.SubjectId " &
                 "JOIN dbo.StudyLevel AS l ON l.StudyLevelId = ts.StudyLevelId " &
                 "WHERE p.UserName = @UserName AND s.SubjectName = @SubjectName " &
                 "  AND l.StudyLevelName = @StudyLevelName " &
@@ -253,8 +253,8 @@ Namespace Seed
                 "                    AND a.AvailabilityDate = @AvailabilityDate " &
                 "                    AND a.StartTime = @StartTime);"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@UserName", SqlDbType.VarChar, 50, userName)
                     DatabaseHelper.AddParameter(command, "@SubjectName", SqlDbType.NVarChar, 100, subjectName)
                     DatabaseHelper.AddParameter(command, "@StudyLevelName", SqlDbType.NVarChar, 50, studyLevelName)

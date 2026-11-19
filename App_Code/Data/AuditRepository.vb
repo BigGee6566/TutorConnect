@@ -3,7 +3,7 @@ Option Explicit On
 
 Imports System.Collections.Generic
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Enums
 Imports TutorConnect.Models
@@ -39,8 +39,8 @@ Namespace Data
 
         ''' <summary>Appends one record, optionally inside a caller's transaction.</summary>
         Public Async Function AppendAsync(entry As AuditEntry,
-                                          Optional connection As SqlConnection = Nothing,
-                                          Optional transaction As SqlTransaction = Nothing) As Task
+                                          Optional connection As NpgsqlConnection = Nothing,
+                                          Optional transaction As NpgsqlTransaction = Nothing) As Task
             If entry Is Nothing Then Throw New ArgumentNullException(NameOf(entry))
 
             If connection IsNot Nothing Then
@@ -48,15 +48,15 @@ Namespace Data
                 Return
             End If
 
-            Using own As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+            Using own As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
                 Await WriteAsync(entry, own, Nothing).ConfigureAwait(False)
             End Using
         End Function
 
         Private Shared Async Function WriteAsync(entry As AuditEntry,
-                                                 connection As SqlConnection,
-                                                 transaction As SqlTransaction) As Task
-            Using command As SqlCommand = DatabaseHelper.CreateCommand(InsertSql, connection, transaction)
+                                                 connection As NpgsqlConnection,
+                                                 transaction As NpgsqlTransaction) As Task
+            Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(InsertSql, connection, transaction)
                 DatabaseHelper.AddParameter(command, "@ActorPersonId", SqlDbType.Int,
                                             DatabaseHelper.ToDbValue(entry.ActorPersonId))
                 DatabaseHelper.AddParameter(command, "@ActorRole", SqlDbType.VarChar, 15,
@@ -92,21 +92,22 @@ Namespace Data
                                           actorPersonId As Integer,
                                           Optional maximumRows As Integer = 200) As Task(Of IList(Of AuditEntry))
             Const sql As String =
-                "SELECT TOP (@MaximumRows) a.AuditId, a.ActorPersonId, a.ActorRole, a.ActionType, " &
+                "SELECT a.AuditId, a.ActorPersonId, a.ActorRole, a.ActionType, " &
                 "       a.EntityType, a.EntityId, a.PreviousState, a.NewState, a.Reason, " &
                 "       a.ResponseNote, a.IpAddress, a.CreatedAt, " &
-                "       p.FirstName + ' ' + p.LastName AS ActorName " &
+                "       p.FirstName || ' ' || p.LastName AS ActorName " &
                 "FROM dbo.AuditLog AS a " &
                 "LEFT JOIN dbo.Person AS p ON p.PersonId = a.ActorPersonId " &
                 "WHERE (@ActionType IS NULL OR a.ActionType = @ActionType) " &
                 "  AND (@EntityType IS NULL OR a.EntityType = @EntityType) " &
                 "  AND (@ActorPersonId = 0 OR a.ActorPersonId = @ActorPersonId) " &
-                "ORDER BY a.CreatedAt DESC, a.AuditId DESC;"
+                "ORDER BY a.CreatedAt DESC, a.AuditId DESC " &
+                "LIMIT @MaximumRows;"
 
             Dim results As New List(Of AuditEntry)()
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@MaximumRows", SqlDbType.Int, maximumRows)
                     DatabaseHelper.AddParameter(command, "@ActionType", SqlDbType.VarChar, 40,
                                                 DatabaseHelper.ToDbValue(actionType))
@@ -114,7 +115,7 @@ Namespace Data
                                                 DatabaseHelper.ToDbValue(entityType))
                     DatabaseHelper.AddParameter(command, "@ActorPersonId", SqlDbType.Int, actorPersonId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         While Await reader.ReadAsync().ConfigureAwait(False)
                             results.Add(New AuditEntry With {
                                 .AuditId = DatabaseHelper.GetInt32(reader, "AuditId"),
@@ -145,8 +146,8 @@ Namespace Data
             Const sql As String =
                 "SELECT COUNT(*) FROM dbo.AuditLog WHERE EntityType = @EntityType AND EntityId = @EntityId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@EntityType", SqlDbType.VarChar, 30, entityType)
                     DatabaseHelper.AddParameter(command, "@EntityId", SqlDbType.Int, entityId)
 

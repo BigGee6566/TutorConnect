@@ -162,7 +162,7 @@ Namespace Services
                 Await _subjects.AddTutorSubjectAsync(tutorId, subjectId, studyLevelId).ConfigureAwait(False)
                 Return ServiceResult.Ok("Subject added.")
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 Return ServiceResult.Fail("You already teach that subject at that level.")
             End Try
         End Function

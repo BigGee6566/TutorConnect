@@ -76,6 +76,22 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces"><HintPath>lib\Npgsql\Microsoft.Bcl.AsyncInterfaces.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="Microsoft.Bcl.HashCode"><HintPath>lib\Npgsql\Microsoft.Bcl.HashCode.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"><HintPath>lib\Npgsql\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions"><HintPath>lib\Npgsql\Microsoft.Extensions.Logging.Abstractions.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="Npgsql"><HintPath>lib\Npgsql\Npgsql.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Buffers"><HintPath>lib\Npgsql\System.Buffers.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Collections.Immutable"><HintPath>lib\Npgsql\System.Collections.Immutable.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource"><HintPath>lib\Npgsql\System.Diagnostics.DiagnosticSource.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Memory"><HintPath>lib\Npgsql\System.Memory.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Numerics.Vectors"><HintPath>lib\Npgsql\System.Numerics.Vectors.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe"><HintPath>lib\Npgsql\System.Runtime.CompilerServices.Unsafe.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Text.Encodings.Web"><HintPath>lib\Npgsql\System.Text.Encodings.Web.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Text.Json"><HintPath>lib\Npgsql\System.Text.Json.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Threading.Channels"><HintPath>lib\Npgsql\System.Threading.Channels.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.Threading.Tasks.Extensions"><HintPath>lib\Npgsql\System.Threading.Tasks.Extensions.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="System.ValueTuple"><HintPath>lib\Npgsql\System.ValueTuple.dll</HintPath><Private>True</Private></Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
@@ -107,6 +123,7 @@
       folder at run time, which would define every type twice.
     -->
     <Compile Include="App_Code\Enums\Enums.vb" />
+    <Compile Include="App_Code\Utilities\Clock.vb" />
     <Compile Include="App_Code\Utilities\EnumHelper.vb" />
     <Compile Include="App_Code\Utilities\ScheduleChangeReasons.vb" />
     <Compile Include="App_Code\Models\Identity.vb" />

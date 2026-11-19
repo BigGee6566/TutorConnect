@@ -3,7 +3,7 @@ Option Explicit On
 
 Imports System.Collections.Generic
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Enums
 Imports TutorConnect.Models
@@ -22,7 +22,7 @@ Namespace Data
 
         Private Const PersonColumns As String =
             "p.PersonId, p.UserName, p.FirstName, p.LastName, p.Gender, p.EmailAddress, " &
-            "p.CellNumber, p.Location, p.[Role], p.IsActive, p.FailedLoginCount, " &
+            "p.CellNumber, p.Location, p.Role, p.IsActive, p.FailedLoginCount, " &
             "p.LockoutEndUtc, p.CreatedAt, p.UpdatedAt"
 
 #Region "Reads"
@@ -38,11 +38,11 @@ Namespace Data
                 "SELECT " & PersonColumns & " FROM dbo.Person AS p " &
                 "WHERE p.UserName = @Identifier OR p.EmailAddress = @Identifier;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@Identifier", SqlDbType.VarChar, 100, userNameOrEmail.Trim())
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then Return Nothing
                         Return MapPerson(reader)
                     End Using
@@ -54,11 +54,11 @@ Namespace Data
             Const sql As String =
                 "SELECT " & PersonColumns & " FROM dbo.Person AS p WHERE p.PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then Return Nothing
                         Return MapPerson(reader)
                     End Using
@@ -74,11 +74,11 @@ Namespace Data
                 "SELECT PersonId, PasswordHash, PasswordSalt, HashIterations " &
                 "FROM dbo.Person WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then Return Nothing
 
                         Return New PersonCredentials With {
@@ -118,10 +118,10 @@ Namespace Data
         ''' switched off would let anyone mint a new one.
         ''' </remarks>
         Public Async Function AdministratorExistsAsync() As Task(Of Boolean)
-            Const sql As String = "SELECT TOP 1 1 FROM dbo.Person WHERE [Role] = 'Administrator';"
+            Const sql As String = "SELECT 1 FROM dbo.Person WHERE Role = 'Administrator' LIMIT 1;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     Dim found As Object = Await command.ExecuteScalarAsync().ConfigureAwait(False)
                     Return found IsNot Nothing AndAlso Not Convert.IsDBNull(found)
                 End Using
@@ -136,8 +136,8 @@ Namespace Data
                                                  excludingPersonId As Integer) As Task(Of Boolean)
             If String.IsNullOrWhiteSpace(value) Then Return False
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, parameterName, type, size, value.Trim())
                     DatabaseHelper.AddParameter(command, "@ExcludingPersonId", SqlDbType.Int, excludingPersonId)
 
@@ -153,11 +153,11 @@ Namespace Data
                 "FROM dbo.Student AS s JOIN dbo.Person AS p ON p.PersonId = s.PersonId " &
                 "WHERE s.PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then Return Nothing
 
                         Return New StudentProfile With {
@@ -179,11 +179,11 @@ Namespace Data
                 "FROM dbo.Tutor AS t JOIN dbo.Person AS p ON p.PersonId = t.PersonId " &
                 "WHERE t.PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then Return Nothing
                         Return MapTutor(reader)
                     End Using
@@ -198,18 +198,18 @@ Namespace Data
             Const sql As String =
                 "SELECT " & PersonColumns & " FROM dbo.Person AS p " &
                 "WHERE (@SearchTerm IS NULL " &
-                "       OR p.FirstName LIKE '%' + @SearchTerm + '%' " &
-                "       OR p.LastName  LIKE '%' + @SearchTerm + '%' " &
-                "       OR p.UserName  LIKE '%' + @SearchTerm + '%' " &
-                "       OR p.EmailAddress LIKE '%' + @SearchTerm + '%') " &
-                "  AND (@Role IS NULL OR p.[Role] = @Role) " &
+                "       OR p.FirstName LIKE '%' || @SearchTerm || '%' " &
+                "       OR p.LastName  LIKE '%' || @SearchTerm || '%' " &
+                "       OR p.UserName  LIKE '%' || @SearchTerm || '%' " &
+                "       OR p.EmailAddress LIKE '%' || @SearchTerm || '%') " &
+                "  AND (@Role IS NULL OR p.Role = @Role) " &
                 "  AND (@IsActive IS NULL OR p.IsActive = @IsActive) " &
                 "ORDER BY p.LastName, p.FirstName;"
 
             Dim results As New List(Of Person)()
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@SearchTerm", SqlDbType.NVarChar, 100,
                                                 DatabaseHelper.ToDbValue(searchTerm))
                     DatabaseHelper.AddParameter(command, "@Role", SqlDbType.VarChar, 15,
@@ -217,7 +217,7 @@ Namespace Data
                     DatabaseHelper.AddParameter(command, "@IsActive", SqlDbType.Bit,
                                                 If(isActive.HasValue, CObj(isActive.Value), CObj(DBNull.Value)))
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         While Await reader.ReadAsync().ConfigureAwait(False)
                             results.Add(MapPerson(reader))
                         End While
@@ -250,17 +250,17 @@ Namespace Data
 
             Const insertPerson As String =
                 "INSERT INTO dbo.Person (UserName, FirstName, LastName, Gender, EmailAddress, " &
-                "CellNumber, PasswordHash, PasswordSalt, HashIterations, Location, [Role], IsActive) " &
+                "CellNumber, PasswordHash, PasswordSalt, HashIterations, Location, Role, IsActive) " &
                 "VALUES (@UserName, @FirstName, @LastName, @Gender, @EmailAddress, @CellNumber, " &
-                "@PasswordHash, @PasswordSalt, @HashIterations, @Location, @Role, @IsActive); " &
-                "SELECT CAST(SCOPE_IDENTITY() AS INT);"
+                "@PasswordHash, @PasswordSalt, @HashIterations, @Location, @Role, @IsActive) " &
+                "RETURNING PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using transaction As SqlTransaction = connection.BeginTransaction()
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using transaction As NpgsqlTransaction = connection.BeginTransaction()
                     Try
                         Dim personId As Integer
 
-                        Using command As SqlCommand = DatabaseHelper.CreateCommand(insertPerson, connection, transaction)
+                        Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(insertPerson, connection, transaction)
                             DatabaseHelper.AddParameter(command, "@UserName", SqlDbType.VarChar, 50, account.UserName)
                             DatabaseHelper.AddParameter(command, "@FirstName", SqlDbType.NVarChar, 50, account.FirstName)
                             DatabaseHelper.AddParameter(command, "@LastName", SqlDbType.NVarChar, 50, account.LastName)
@@ -282,7 +282,7 @@ Namespace Data
                             Case UserRole.Student
                                 Const insertStudent As String =
                                     "INSERT INTO dbo.Student (StudentNo, PersonId) VALUES (@StudentNo, @PersonId);"
-                                Using command As SqlCommand = DatabaseHelper.CreateCommand(insertStudent, connection, transaction)
+                                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(insertStudent, connection, transaction)
                                     DatabaseHelper.AddParameter(command, "@StudentNo", SqlDbType.VarChar, 20, studentNo)
                                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
                                     Await command.ExecuteNonQueryAsync().ConfigureAwait(False)
@@ -298,7 +298,7 @@ Namespace Data
                                     "INSERT INTO dbo.Tutor (PersonId, Qualification, ExperienceYears, " &
                                     "RatePerSession, Bio, IsApproved) " &
                                     "VALUES (@PersonId, @Qualification, @ExperienceYears, @RatePerSession, @Bio, 0);"
-                                Using command As SqlCommand = DatabaseHelper.CreateCommand(insertTutor, connection, transaction)
+                                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(insertTutor, connection, transaction)
                                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
                                     DatabaseHelper.AddParameter(command, "@Qualification", SqlDbType.NVarChar, 100, tutorDetails.Qualification)
                                     DatabaseHelper.AddParameter(command, "@ExperienceYears", SqlDbType.Int, tutorDetails.ExperienceYears)
@@ -317,7 +317,7 @@ Namespace Data
                     Catch
                         ' The rollback is guarded. A transaction that SQL Server has already
                         ' doomed - a severe error, or a dropped connection - throws
-                        ' "This SqlTransaction has completed" from Rollback, and because that
+                        ' "This NpgsqlTransaction has completed" from Rollback, and because that
                         ' happens inside the Catch it REPLACES the original exception. The
                         ' real failure is then invisible, which is exactly how a seeding error
                         ' surfaced here as a meaningless ZombieCheck stack.
@@ -343,8 +343,8 @@ Namespace Data
                 "Location = @Location, UpdatedAt = SYSUTCDATETIME() " &
                 "WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@FirstName", SqlDbType.NVarChar, 50, account.FirstName)
                     DatabaseHelper.AddParameter(command, "@LastName", SqlDbType.NVarChar, 50, account.LastName)
                     DatabaseHelper.AddParameter(command, "@Gender", SqlDbType.VarChar, 10, account.Gender)
@@ -366,12 +366,12 @@ Namespace Data
                 "UPDATE dbo.Person " &
                 "SET FailedLoginCount = FailedLoginCount + 1, " &
                 "    LockoutEndUtc = CASE WHEN FailedLoginCount + 1 >= @Threshold " &
-                "                         THEN DATEADD(MINUTE, @LockoutMinutes, SYSUTCDATETIME()) " &
+                "                         THEN (SYSUTCDATETIME() + make_interval(mins => @LockoutMinutes)) " &
                 "                         ELSE LockoutEndUtc END " &
                 "WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@Threshold", SqlDbType.Int, threshold)
                     DatabaseHelper.AddParameter(command, "@LockoutMinutes", SqlDbType.Int, lockoutMinutes)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
@@ -384,8 +384,8 @@ Namespace Data
             Const sql As String =
                 "UPDATE dbo.Person SET FailedLoginCount = 0, LockoutEndUtc = NULL WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
                     Await command.ExecuteNonQueryAsync().ConfigureAwait(False)
                 End Using
@@ -397,8 +397,8 @@ Namespace Data
             Const sql As String =
                 "UPDATE dbo.Person SET IsActive = @IsActive, UpdatedAt = SYSUTCDATETIME() WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@IsActive", SqlDbType.Bit, isActive)
                     DatabaseHelper.AddParameter(command, "@PersonId", SqlDbType.Int, personId)
                     Return Await command.ExecuteNonQueryAsync().ConfigureAwait(False) = 1
@@ -414,8 +414,8 @@ Namespace Data
                 "UPDATE dbo.Person SET PasswordHash = @PasswordHash, PasswordSalt = @PasswordSalt, " &
                 "HashIterations = @HashIterations, UpdatedAt = SYSUTCDATETIME() WHERE PersonId = @PersonId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@PasswordHash", SqlDbType.VarBinary, 64, passwordHash)
                     DatabaseHelper.AddParameter(command, "@PasswordSalt", SqlDbType.VarBinary, 32, passwordSalt)
                     DatabaseHelper.AddParameter(command, "@HashIterations", SqlDbType.Int, hashIterations)
@@ -429,7 +429,7 @@ Namespace Data
 
 #Region "Mapping"
 
-        Friend Shared Function MapPerson(reader As SqlDataReader) As Person
+        Friend Shared Function MapPerson(reader As NpgsqlDataReader) As Person
             Return New Person With {
                 .PersonId = DatabaseHelper.GetInt32(reader, "PersonId"),
                 .UserName = DatabaseHelper.GetString(reader, "UserName"),
@@ -453,7 +453,7 @@ Namespace Data
         ''' CreatedAt as TutorCreatedAt: both tables have a CreatedAt column, and
         ''' GetOrdinal resolves a duplicate name to the first match.
         ''' </summary>
-        Friend Shared Function MapTutor(reader As SqlDataReader) As TutorProfile
+        Friend Shared Function MapTutor(reader As NpgsqlDataReader) As TutorProfile
             Return New TutorProfile With {
                 .TutorId = DatabaseHelper.GetInt32(reader, "TutorId"),
                 .PersonId = DatabaseHelper.GetInt32(reader, "PersonId"),

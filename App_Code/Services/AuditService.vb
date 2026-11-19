@@ -2,7 +2,7 @@ Option Strict On
 Option Explicit On
 
 Imports System.Collections.Generic
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports System.Web
 Imports TutorConnect.Data
@@ -59,8 +59,8 @@ Namespace Services
                                           newState As String,
                                           reason As String,
                                           responseNote As String,
-                                          Optional connection As SqlConnection = Nothing,
-                                          Optional transaction As SqlTransaction = Nothing) As Task _
+                                          Optional connection As NpgsqlConnection = Nothing,
+                                          Optional transaction As NpgsqlTransaction = Nothing) As Task _
             Implements IAuditService.RecordAsync
 
             Dim entry As New AuditEntry With {
@@ -85,7 +85,7 @@ Namespace Services
 
             Try
                 Await _audit.AppendAsync(entry).ConfigureAwait(False)
-            Catch ex As SqlException
+            Catch ex As Npgsql.PostgresException
                 ' Best effort - see the class remarks.
             End Try
         End Function

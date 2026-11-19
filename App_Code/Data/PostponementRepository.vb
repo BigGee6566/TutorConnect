@@ -3,7 +3,7 @@ Option Explicit On
 
 Imports System.Collections.Generic
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Enums
 Imports TutorConnect.Models
@@ -33,10 +33,10 @@ Namespace Data
             "pr.PostponementId, pr.BookingId, pr.StudentId, pr.TutorId, " &
             "pr.OriginalDate, pr.OriginalStart, pr.OriginalEnd, " &
             "pr.ProposedDate, pr.ProposedStart, pr.ProposedEnd, " &
-            "pr.ReasonCategory, pr.StudentNote, pr.[Status], pr.CreatedAt, " &
+            "pr.ReasonCategory, pr.StudentNote, pr.Status, pr.CreatedAt, " &
             "pr.TutorResponseNote, pr.RespondedAt, " &
-            "sp.FirstName + ' ' + sp.LastName AS StudentName, " &
-            "tp.FirstName + ' ' + tp.LastName AS TutorName, " &
+            "sp.FirstName || ' ' || sp.LastName AS StudentName, " &
+            "tp.FirstName || ' ' || tp.LastName AS TutorName, " &
             "s.SubjectName, l.StudyLevelName"
 
         Private Const FromClause As String =
@@ -48,7 +48,7 @@ Namespace Data
             "JOIN dbo.Booking AS b  ON b.BookingId  = pr.BookingId " &
             "JOIN dbo.SessionRequest AS r ON r.RequestId = b.RequestId " &
             "JOIN dbo.TutorSubject AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
-            "JOIN dbo.[Subject] AS s ON s.SubjectId = ts.SubjectId " &
+            "JOIN dbo.Subject AS s ON s.SubjectId = ts.SubjectId " &
             "JOIN dbo.StudyLevel AS l ON l.StudyLevelId = ts.StudyLevelId "
 
 #Region "Writes"
@@ -85,11 +85,11 @@ Namespace Data
                 "JOIN dbo.TutorSubject AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
                 "WHERE b.BookingId = @BookingId " &
                 "  AND r.StudentId = @StudentId " &
-                "  AND b.[Status] = 'Scheduled'; " &
-                "SELECT CAST(ISNULL(SCOPE_IDENTITY(), 0) AS INT);"
+                "  AND b.Status = 'Scheduled' " &
+                "RETURNING PostponementId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@BookingId", SqlDbType.Int, bookingId)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, studentId)
                     DatabaseHelper.AddParameter(command, "@ProposedDate", SqlDbType.Date, proposedDate)
@@ -127,19 +127,20 @@ Namespace Data
         Public Async Function ApproveAsync(postponementId As Integer,
                                            tutorId As Integer,
                                            responseNote As String) As Task(Of PostponeOutcome)
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using transaction As SqlTransaction = connection.BeginTransaction(IsolationLevel.Serializable)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using transaction As NpgsqlTransaction = connection.BeginTransaction(IsolationLevel.Serializable)
                     Try
                         Const selectProposal As String =
                             "SELECT pr.BookingId, pr.StudentId, pr.ProposedDate, pr.ProposedStart, pr.ProposedEnd, " &
-                            "       b.[Status] AS BookingStatus, b.AvailabilityId, ts.TutorSubjectId " &
-                            "FROM dbo.PostponementRequest AS pr WITH (UPDLOCK, HOLDLOCK) " &
+                            "       b.Status AS BookingStatus, b.AvailabilityId, ts.TutorSubjectId " &
+                            "FROM dbo.PostponementRequest AS pr " &
                             "JOIN dbo.Booking AS b ON b.BookingId = pr.BookingId " &
                             "JOIN dbo.SessionRequest AS r ON r.RequestId = b.RequestId " &
                             "JOIN dbo.TutorSubject AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
                             "WHERE pr.PostponementId = @PostponementId " &
                             "  AND pr.TutorId = @TutorId " &
-                            "  AND pr.[Status] = 'PendingTutorReview';"
+                            "  AND pr.Status = 'PendingTutorReview' " &
+                            "FOR UPDATE OF pr, b;"
 
                         Dim bookingId, studentId, oldAvailabilityId, tutorSubjectId As Integer
                         Dim proposedDate As Date
@@ -147,11 +148,11 @@ Namespace Data
                         Dim bookingStatus As String = Nothing
                         Dim found As Boolean
 
-                        Using command As SqlCommand = DatabaseHelper.CreateCommand(selectProposal, connection, transaction)
+                        Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(selectProposal, connection, transaction)
                             DatabaseHelper.AddParameter(command, "@PostponementId", SqlDbType.Int, postponementId)
                             DatabaseHelper.AddParameter(command, "@TutorId", SqlDbType.Int, tutorId)
 
-                            Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                            Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                                 found = Await reader.ReadAsync().ConfigureAwait(False)
 
                                 If found Then
@@ -197,24 +198,24 @@ Namespace Data
                         End If
 
                         Const applyApproval As String =
-                            "DECLARE @NewAvailabilityId INT; " &
-                            "INSERT INTO dbo.TutorAvailability " &
-                            "(TutorSubjectId, AvailabilityDate, StartTime, EndTime, IsBooked) " &
-                            "VALUES (@TutorSubjectId, @ProposedDate, @ProposedStart, @ProposedEnd, 1); " &
-                            "SET @NewAvailabilityId = CAST(SCOPE_IDENTITY() AS INT); " &
+                            "WITH na AS (" &
+                            "  INSERT INTO dbo.TutorAvailability " &
+                            "  (TutorSubjectId, AvailabilityDate, StartTime, EndTime, IsBooked) " &
+                            "  VALUES (@TutorSubjectId, @ProposedDate, @ProposedStart, @ProposedEnd, 1) " &
+                            "  RETURNING AvailabilityId) " &
                             "UPDATE dbo.Booking " &
                             "SET BookingDate = @ProposedDate, StartTime = @ProposedStart, " &
-                            "    EndTime = @ProposedEnd, AvailabilityId = @NewAvailabilityId " &
+                            "    EndTime = @ProposedEnd, AvailabilityId = (SELECT AvailabilityId FROM na) " &
                             "WHERE BookingId = @BookingId; " &
                             "UPDATE dbo.SessionRequest " &
                             "SET RequestedDate = @ProposedDate, StartTime = @ProposedStart, EndTime = @ProposedEnd " &
                             "WHERE RequestId = (SELECT RequestId FROM dbo.Booking WHERE BookingId = @BookingId); " &
                             "UPDATE dbo.TutorAvailability SET IsBooked = 0 WHERE AvailabilityId = @OldAvailabilityId; " &
                             "UPDATE dbo.PostponementRequest " &
-                            "SET [Status] = 'Approved', RespondedAt = SYSUTCDATETIME(), TutorResponseNote = @Note " &
+                            "SET Status = 'Approved', RespondedAt = SYSUTCDATETIME(), TutorResponseNote = @Note " &
                             "WHERE PostponementId = @PostponementId;"
 
-                        Using command As SqlCommand = DatabaseHelper.CreateCommand(applyApproval, connection, transaction)
+                        Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(applyApproval, connection, transaction)
                             DatabaseHelper.AddParameter(command, "@TutorSubjectId", SqlDbType.Int, tutorSubjectId)
                             DatabaseHelper.AddParameter(command, "@ProposedDate", SqlDbType.Date, proposedDate)
                             DatabaseHelper.AddParameter(command, "@ProposedStart", SqlDbType.Time, proposedStart)
@@ -253,11 +254,11 @@ Namespace Data
             ' already-answered proposal changes nothing rather than being caught separately.
             Const sql As String =
                 "UPDATE dbo.PostponementRequest " &
-                "SET [Status] = 'Declined', RespondedAt = SYSUTCDATETIME(), TutorResponseNote = @Note " &
-                "WHERE PostponementId = @Id AND TutorId = @TutorId AND [Status] = 'PendingTutorReview';"
+                "SET Status = 'Declined', RespondedAt = SYSUTCDATETIME(), TutorResponseNote = @Note " &
+                "WHERE PostponementId = @Id AND TutorId = @TutorId AND Status = 'PendingTutorReview';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@Id", SqlDbType.Int, postponementId)
                     DatabaseHelper.AddParameter(command, "@TutorId", SqlDbType.Int, tutorId)
                     DatabaseHelper.AddParameter(command, "@Note", SqlDbType.NVarChar, 200,
@@ -272,11 +273,11 @@ Namespace Data
         Public Async Function CancelAsync(postponementId As Integer, studentId As Integer) As Task(Of Boolean)
             Const sql As String =
                 "UPDATE dbo.PostponementRequest " &
-                "SET [Status] = 'Cancelled', RespondedAt = SYSUTCDATETIME() " &
-                "WHERE PostponementId = @Id AND StudentId = @StudentId AND [Status] = 'PendingTutorReview';"
+                "SET Status = 'Cancelled', RespondedAt = SYSUTCDATETIME() " &
+                "WHERE PostponementId = @Id AND StudentId = @StudentId AND Status = 'PendingTutorReview';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@Id", SqlDbType.Int, postponementId)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, studentId)
                     Return Await command.ExecuteNonQueryAsync().ConfigureAwait(False) > 0
@@ -296,7 +297,7 @@ Namespace Data
             Dim sql As String =
                 "SELECT " & SelectColumns & " " & FromClause &
                 "WHERE pr.TutorId = @OwnerId " &
-                "ORDER BY CASE WHEN pr.[Status] = 'PendingTutorReview' THEN 0 ELSE 1 END, pr.CreatedAt DESC;"
+                "ORDER BY CASE WHEN pr.Status = 'PendingTutorReview' THEN 0 ELSE 1 END, pr.CreatedAt DESC;"
 
             Return Await ReadListAsync(sql, tutorId).ConfigureAwait(False)
         End Function
@@ -314,7 +315,7 @@ Namespace Data
         Public Async Function GetPendingForBookingAsync(bookingId As Integer) As Task(Of PostponementRequest)
             Dim sql As String =
                 "SELECT " & SelectColumns & " " & FromClause &
-                "WHERE pr.BookingId = @OwnerId AND pr.[Status] = 'PendingTutorReview';"
+                "WHERE pr.BookingId = @OwnerId AND pr.Status = 'PendingTutorReview';"
 
             Dim rows As IList(Of PostponementRequest) = Await ReadListAsync(sql, bookingId).ConfigureAwait(False)
             Return If(rows.Count > 0, rows(0), Nothing)
@@ -333,11 +334,11 @@ Namespace Data
         Private Shared Async Function ReadListAsync(sql As String, ownerId As Integer) As Task(Of IList(Of PostponementRequest))
             Dim results As New List(Of PostponementRequest)()
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@OwnerId", SqlDbType.Int, ownerId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         While Await reader.ReadAsync().ConfigureAwait(False)
                             results.Add(Map(reader))
                         End While
@@ -348,7 +349,7 @@ Namespace Data
             Return results
         End Function
 
-        Private Shared Function Map(reader As SqlDataReader) As PostponementRequest
+        Private Shared Function Map(reader As NpgsqlDataReader) As PostponementRequest
             Return New PostponementRequest With {
                 .PostponementId = DatabaseHelper.GetInt32(reader, "PostponementId"),
                 .BookingId = DatabaseHelper.GetInt32(reader, "BookingId"),

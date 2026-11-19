@@ -22,3 +22,12 @@ packages/
 
 # Test run output
 TestResults/
+
+# Generated administrator credentials - never commit
+ADMIN-LOGIN.local.txt
+
+# Vendored Npgsql assemblies are committed (the global *.dll rule above excludes them otherwise)
+!lib/**/*.dll
+
+# Publish output from deploy/Deploy-MonsterAsp.ps1
+deploy/out/

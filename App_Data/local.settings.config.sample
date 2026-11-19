@@ -10,5 +10,7 @@
   The value below is a placeholder, not a password in use anywhere.
 -->
 <appSettings>
+  <!-- Supabase: Dashboard -> Connect -> Session pooler. Replace the password placeholder. -->
+  <add key="Db:ConnectionString" value="Host=SUPABASE-POOLER-HOST;Port=5432;Database=postgres;Username=postgres.SUPABASE-PROJECT-REF;Password=YOUR-DATABASE-PASSWORD;SSL Mode=Require;Search Path=dbo,extensions,public;Max Pool Size=10" />
   <add key="Seed:DevPassword" value="CHANGE-ME-Local1" />
 </appSettings>

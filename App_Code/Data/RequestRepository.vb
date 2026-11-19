@@ -3,7 +3,7 @@ Option Explicit On
 
 Imports System.Collections.Generic
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Enums
 Imports TutorConnect.Models
@@ -18,15 +18,15 @@ Namespace Data
 
         Private Const RequestColumns As String =
             "r.RequestId, r.StudentId, r.TutorSubjectId, r.AvailabilityId, r.RequestedDate, " &
-            "r.StartTime, r.EndTime, r.[Status], r.StudentMessage, r.CreatedAt, r.RespondedAt, " &
+            "r.StartTime, r.EndTime, r.Status, r.StudentMessage, r.CreatedAt, r.RespondedAt, " &
             "r.DeclineReason, sub.SubjectName, sl.StudyLevelName, " &
-            "sp.FirstName + ' ' + sp.LastName AS StudentName, " &
-            "tp.FirstName + ' ' + tp.LastName AS TutorName"
+            "sp.FirstName || ' ' || sp.LastName AS StudentName, " &
+            "tp.FirstName || ' ' || tp.LastName AS TutorName"
 
         Private Const RequestJoins As String =
             "FROM dbo.SessionRequest AS r " &
             "JOIN dbo.TutorSubject AS ts  ON ts.TutorSubjectId = r.TutorSubjectId " &
-            "JOIN dbo.[Subject]    AS sub ON sub.SubjectId = ts.SubjectId " &
+            "JOIN dbo.Subject    AS sub ON sub.SubjectId = ts.SubjectId " &
             "JOIN dbo.StudyLevel   AS sl  ON sl.StudyLevelId = ts.StudyLevelId " &
             "JOIN dbo.Tutor        AS t   ON t.TutorId = ts.TutorId " &
             "JOIN dbo.Person       AS tp  ON tp.PersonId = t.PersonId " &
@@ -73,7 +73,7 @@ Namespace Data
         Public Async Function GetAllAsync(status As String) As Task(Of IList(Of SessionRequest))
             Const sql As String =
                 "SELECT " & RequestColumns & " " & RequestJoins &
-                "WHERE (@Status IS NULL OR r.[Status] = @Status) " &
+                "WHERE (@Status IS NULL OR r.Status = @Status) " &
                 "ORDER BY r.CreatedAt DESC;"
 
             Return Await ReadAsync(sql, Sub(command)
@@ -87,10 +87,10 @@ Namespace Data
             Const sql As String =
                 "SELECT COUNT(*) FROM dbo.SessionRequest AS r " &
                 "JOIN dbo.TutorSubject AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
-                "WHERE ts.TutorId = @TutorId AND r.[Status] = 'Pending';"
+                "WHERE ts.TutorId = @TutorId AND r.Status = 'Pending';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@TutorId", SqlDbType.Int, tutorId)
                     Dim scalar As Object = Await command.ExecuteScalarAsync().ConfigureAwait(False)
                     Return Convert.ToInt32(scalar, Globalization.CultureInfo.InvariantCulture)
@@ -119,8 +119,8 @@ Namespace Data
                 "  AND a.AvailabilityDate = @RequestedDate " &
                 "  AND @StartTime >= a.StartTime AND @EndTime <= a.EndTime;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@AvailabilityId", SqlDbType.Int, availabilityId)
                     DatabaseHelper.AddParameter(command, "@TutorSubjectId", SqlDbType.Int, tutorSubjectId)
                     DatabaseHelper.AddParameter(command, "@RequestedDate", SqlDbType.Date, requestedDate)
@@ -136,10 +136,10 @@ Namespace Data
         ''' <summary>BR-10. True when a Scheduled booking already occupies the slot.</summary>
         Public Async Function SlotHasScheduledBookingAsync(availabilityId As Integer) As Task(Of Boolean)
             Const sql As String =
-                "SELECT 1 FROM dbo.Booking WHERE AvailabilityId = @AvailabilityId AND [Status] = 'Scheduled';"
+                "SELECT 1 FROM dbo.Booking WHERE AvailabilityId = @AvailabilityId AND Status = 'Scheduled';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@AvailabilityId", SqlDbType.Int, availabilityId)
                     Dim found As Object = Await command.ExecuteScalarAsync().ConfigureAwait(False)
                     Return found IsNot Nothing AndAlso Not Convert.IsDBNull(found)
@@ -156,13 +156,13 @@ Namespace Data
 
             Const sql As String =
                 "INSERT INTO dbo.SessionRequest (StudentId, TutorSubjectId, AvailabilityId, " &
-                "RequestedDate, StartTime, EndTime, [Status], StudentMessage) " &
+                "RequestedDate, StartTime, EndTime, Status, StudentMessage) " &
                 "VALUES (@StudentId, @TutorSubjectId, @AvailabilityId, @RequestedDate, " &
-                "@StartTime, @EndTime, @Status, @StudentMessage); " &
-                "SELECT CAST(SCOPE_IDENTITY() AS INT);"
+                "@StartTime, @EndTime, @Status, @StudentMessage) " &
+                "RETURNING RequestId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, request.StudentId)
                     DatabaseHelper.AddParameter(command, "@TutorSubjectId", SqlDbType.Int, request.TutorSubjectId)
                     DatabaseHelper.AddParameter(command, "@AvailabilityId", SqlDbType.Int, request.AvailabilityId)
@@ -186,11 +186,11 @@ Namespace Data
         ''' </summary>
         Public Async Function CancelByStudentAsync(requestId As Integer, studentId As Integer) As Task(Of Boolean)
             Const sql As String =
-                "UPDATE dbo.SessionRequest SET [Status] = 'Cancelled', RespondedAt = SYSUTCDATETIME() " &
-                "WHERE RequestId = @RequestId AND StudentId = @StudentId AND [Status] = 'Pending';"
+                "UPDATE dbo.SessionRequest SET Status = 'Cancelled', RespondedAt = SYSUTCDATETIME() " &
+                "WHERE RequestId = @RequestId AND StudentId = @StudentId AND Status = 'Pending';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@RequestId", SqlDbType.Int, requestId)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, studentId)
                     Return Await command.ExecuteNonQueryAsync().ConfigureAwait(False) = 1
@@ -206,14 +206,13 @@ Namespace Data
                                            tutorId As Integer,
                                            declineReason As String) As Task(Of Boolean)
             Const sql As String =
-                "UPDATE r SET r.[Status] = 'Declined', r.RespondedAt = SYSUTCDATETIME(), " &
-                "             r.DeclineReason = @DeclineReason " &
-                "FROM dbo.SessionRequest AS r " &
-                "JOIN dbo.TutorSubject AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
-                "WHERE r.RequestId = @RequestId AND ts.TutorId = @TutorId AND r.[Status] = 'Pending';"
+                "UPDATE dbo.SessionRequest AS r SET Status = 'Declined', RespondedAt = SYSUTCDATETIME(), " &
+                "             DeclineReason = @DeclineReason " &
+                "FROM dbo.TutorSubject AS ts " &
+                "WHERE ts.TutorSubjectId = r.TutorSubjectId AND r.RequestId = @RequestId AND ts.TutorId = @TutorId AND r.Status = 'Pending';"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@RequestId", SqlDbType.Int, requestId)
                     DatabaseHelper.AddParameter(command, "@TutorId", SqlDbType.Int, tutorId)
                     DatabaseHelper.AddParameter(command, "@DeclineReason", SqlDbType.NVarChar, 200,
@@ -226,14 +225,14 @@ Namespace Data
 #End Region
 
         Private Shared Async Function ReadAsync(sql As String,
-                                                bindParameters As Action(Of SqlCommand)) As Task(Of IList(Of SessionRequest))
+                                                bindParameters As Action(Of NpgsqlCommand)) As Task(Of IList(Of SessionRequest))
             Dim results As New List(Of SessionRequest)()
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     bindParameters(command)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         While Await reader.ReadAsync().ConfigureAwait(False)
                             results.Add(New SessionRequest With {
                                 .RequestId = DatabaseHelper.GetInt32(reader, "RequestId"),

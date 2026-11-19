@@ -65,7 +65,7 @@ Namespace Services
             Try
                 reviewId = Await _reviews.CreateAsync(bookingId, studentId, rating, comment).ConfigureAwait(False)
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 2601 OrElse ex.Number = 2627
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsUniqueViolation(ex)
                 ' Two submissions raced; UQ_Review_Booking held the line (AT-21).
                 Return ServiceResult(Of Integer).Fail("You have already reviewed this session.")
             End Try

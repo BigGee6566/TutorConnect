@@ -48,7 +48,7 @@ Namespace Validation
                                                  fieldName As String) As ValidationResult
             Dim result As New ValidationResult()
 
-            If slotDate.Date.Add(startTime) <= Date.Now Then
+            If slotDate.Date.Add(startTime) <= TutorConnect.Utilities.Clock.Now Then
                 result.AddError(fieldName, "That time has already passed. Choose a future date and time.")
             End If
 
@@ -61,7 +61,7 @@ Namespace Validation
                                                              Optional maximumDaysAhead As Integer = 365) As ValidationResult
             Dim result As New ValidationResult()
 
-            If slotDate.Date > Date.Today.AddDays(maximumDaysAhead) Then
+            If slotDate.Date > TutorConnect.Utilities.Clock.Today.AddDays(maximumDaysAhead) Then
                 result.AddError(fieldName, $"Choose a date within the next {maximumDaysAhead} days.")
             End If
 

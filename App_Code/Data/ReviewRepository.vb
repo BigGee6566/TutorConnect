@@ -3,7 +3,7 @@ Option Explicit On
 
 Imports System.Collections.Generic
 Imports System.Data
-Imports System.Data.SqlClient
+Imports Npgsql
 Imports System.Threading.Tasks
 Imports TutorConnect.Models
 
@@ -24,15 +24,15 @@ Namespace Data
             "rv.IsHidden, rv.HiddenReason, rv.HiddenAt, " &
             "b.BookingDate AS SessionDate, b.StartTime, b.EndTime, " &
             "sub.SubjectName, sl.StudyLevelName, " &
-            "sp.FirstName + ' ' + sp.LastName AS StudentName, " &
-            "tp.FirstName + ' ' + tp.LastName AS TutorName"
+            "sp.FirstName || ' ' || sp.LastName AS StudentName, " &
+            "tp.FirstName || ' ' || tp.LastName AS TutorName"
 
         Private Const ReviewJoins As String =
             "FROM dbo.Review AS rv " &
             "JOIN dbo.Booking        AS b   ON b.BookingId = rv.BookingId " &
             "JOIN dbo.SessionRequest AS r   ON r.RequestId = b.RequestId " &
             "JOIN dbo.TutorSubject   AS ts  ON ts.TutorSubjectId = r.TutorSubjectId " &
-            "JOIN dbo.[Subject]      AS sub ON sub.SubjectId = ts.SubjectId " &
+            "JOIN dbo.Subject      AS sub ON sub.SubjectId = ts.SubjectId " &
             "JOIN dbo.StudyLevel     AS sl  ON sl.StudyLevelId = ts.StudyLevelId " &
             "JOIN dbo.Tutor          AS t   ON t.TutorId = ts.TutorId " &
             "JOIN dbo.Person         AS tp  ON tp.PersonId = t.PersonId " &
@@ -83,11 +83,11 @@ Namespace Data
                 "JOIN dbo.SessionRequest AS r ON r.RequestId = b.RequestId " &
                 "WHERE b.BookingId = @BookingId " &
                 "  AND r.StudentId = @StudentId " &
-                "  AND b.[Status] = 'Completed' " &
+                "  AND b.Status = 'Completed' " &
                 "  AND NOT EXISTS (SELECT 1 FROM dbo.Review AS rv WHERE rv.BookingId = b.BookingId);"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@BookingId", SqlDbType.Int, bookingId)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, studentId)
                     Dim found As Object = Await command.ExecuteScalarAsync().ConfigureAwait(False)
@@ -118,12 +118,12 @@ Namespace Data
                 "    JOIN dbo.SessionRequest AS r ON r.RequestId = b.RequestId " &
                 "    WHERE b.BookingId = @BookingId " &
                 "      AND r.StudentId = @StudentId " &
-                "      AND b.[Status] = 'Completed' " &
-                "      AND NOT EXISTS (SELECT 1 FROM dbo.Review AS rv WHERE rv.BookingId = b.BookingId)); " &
-                "SELECT CAST(ISNULL(SCOPE_IDENTITY(), 0) AS INT);"
+                "      AND b.Status = 'Completed' " &
+                "      AND NOT EXISTS (SELECT 1 FROM dbo.Review AS rv WHERE rv.BookingId = b.BookingId)) " &
+                "RETURNING ReviewId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@BookingId", SqlDbType.Int, bookingId)
                     DatabaseHelper.AddParameter(command, "@StudentId", SqlDbType.Int, studentId)
                     DatabaseHelper.AddParameter(command, "@Rating", SqlDbType.TinyInt, rating)
@@ -169,8 +169,8 @@ Namespace Data
                 "    HiddenBy     = CASE WHEN @IsHidden = 1 THEN @AdministratorPersonId ELSE NULL END " &
                 "WHERE ReviewId = @ReviewId;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@IsHidden", SqlDbType.Bit, isHidden)
                     DatabaseHelper.AddParameter(command, "@Reason", SqlDbType.NVarChar, 200,
                                                 DatabaseHelper.ToDbValue(reason))
@@ -192,11 +192,11 @@ Namespace Data
                 "JOIN dbo.TutorSubject   AS ts ON ts.TutorSubjectId = r.TutorSubjectId " &
                 "WHERE ts.TutorId = @TutorId AND rv.IsHidden = 0;"
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     DatabaseHelper.AddParameter(command, "@TutorId", SqlDbType.Int, tutorId)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         If Not Await reader.ReadAsync().ConfigureAwait(False) Then
                             Return New TutorRatingSummary With {.TutorId = tutorId, .ReviewCount = 0}
                         End If
@@ -212,14 +212,14 @@ Namespace Data
         End Function
 
         Private Shared Async Function ReadAsync(sql As String,
-                                                bindParameters As Action(Of SqlCommand)) As Task(Of IList(Of Review))
+                                                bindParameters As Action(Of NpgsqlCommand)) As Task(Of IList(Of Review))
             Dim results As New List(Of Review)()
 
-            Using connection As SqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
-                Using command As SqlCommand = DatabaseHelper.CreateCommand(sql, connection)
+            Using connection As NpgsqlConnection = Await DatabaseHelper.CreateOpenConnectionAsync().ConfigureAwait(False)
+                Using command As NpgsqlCommand = DatabaseHelper.CreateCommand(sql, connection)
                     bindParameters(command)
 
-                    Using reader As SqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
+                    Using reader As NpgsqlDataReader = Await command.ExecuteReaderAsync().ConfigureAwait(False)
                         While Await reader.ReadAsync().ConfigureAwait(False)
                             results.Add(New Review With {
                                 .ReviewId = DatabaseHelper.GetInt32(reader, "ReviewId"),

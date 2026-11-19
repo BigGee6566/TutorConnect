@@ -61,7 +61,7 @@ Namespace Services
             Try
                 outcome = Await _bookings.AcceptRequestAsync(requestId, tutorId).ConfigureAwait(False)
 
-            Catch ex As System.Data.SqlClient.SqlException When ex.Number = 1205
+            Catch ex As Npgsql.PostgresException When TutorConnect.Data.DatabaseHelper.IsTransientConflict(ex)
                 ' Deadlock victim. Two tutors, or two tabs, reached the same slot at once;
                 ' one was chosen to roll back. Nothing was written, so this is a conflict
                 ' to report, not a fault.
@@ -323,7 +323,7 @@ Namespace Services
                 Return ServiceResult.Fail("The end time must be later than the start time.")
             End If
 
-            If newDate.Add(newStart) <= Date.Now Then
+            If newDate.Add(newStart) <= TutorConnect.Utilities.Clock.Now Then
                 Return ServiceResult.Fail("Choose a date and time in the future.")
             End If
 
