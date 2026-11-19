@@ -31,3 +31,4 @@ ADMIN-LOGIN.local.txt
 
 # Publish output from deploy/Deploy-MonsterAsp.ps1
 deploy/out/
+deploy/server-logs/
